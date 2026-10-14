@@ -1,0 +1,25 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Credentials
+.env
+.env.*
+!.env.example
+*service-account*.json
+
+# Local datasets
+*.csv
+*.parquet
+*.zip
+
+# dbt
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db
