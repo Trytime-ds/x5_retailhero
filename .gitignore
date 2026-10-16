@@ -23,3 +23,6 @@ dbt/dbt_packages/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Raw datasets
+data/
