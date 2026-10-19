@@ -4,38 +4,42 @@
 
 ## Overview
 
-An end-to-end retail analytics project focused on understanding customer behavior, measuring the incremental impact of SMS marketing campaigns, and developing more effective customer targeting strategies.
+An end-to-end retail analytics project focused on understanding customer behavior, evaluating SMS marketing campaigns, and developing better customer targeting strategies.
 
 The central business question is:
 
 **Which customers are more likely to purchase because of a campaign, rather than purchase anyway?**
 
-The project combines SQL-based data analysis, analytics engineering, customer segmentation, and experimentation, with uplift modeling planned for a later phase.
+The project combines SQL-based analysis, analytics engineering, customer segmentation and experimentation. Individual uplift modeling is a post-MVP extension.
 
 ## Tech Stack
 
-**Google Cloud Storage · BigQuery · SQL · dbt (planned) · Python (planned) · Git**
+**Google Cloud Storage · BigQuery · SQL · dbt (planned) · Python (post-MVP) · Git**
 
 ## Current Progress
 
-**Phase 1 — Data Foundation: Completed**
+**Phase 1 — RAW Data Foundation: Completed**
 
-- Ingested five source datasets into BigQuery.
-- Profiled over 45 million purchase records.
-- Validated purchase granularity and candidate keys.
-- Completed initial experimental dataset integrity checks.
+- Ingested five sources into BigQuery.
+- Profiled over 45 million purchase product lines.
+- Validated purchase grain, primary-key candidates, client/product relationships and join cardinality.
+- Performed targeted quantity, demographics and loyalty-date QA.
+- Assessed source historical time coverage and measured treatment/control covariate balance.
 
-**Current focus:** Data quality, referential integrity, experimental validity, and temporal leakage assessment.
+**Current focus: dbt source declarations, staging casts and risk-based tests.** The analyzed groups show good balance on the observed covariates; nevertheless, treatment randomization, exact campaign timing and outcome window have not been confirmed. The observed +3.3231 percentage point conversion difference must **not** be interpreted as proven SMS incrementality.
+
+See [`docs/DECISIONS.md`](docs/DECISIONS.md) for evidence, limitations and technical decisions; [`CHANGELOG.md`](CHANGELOG.md) for milestones.
 
 ## Roadmap
 
-- [x] Data ingestion and initial source validation
-- [ ] Data quality and experiment validation
+- [x] Source ingestion and structural relationship validation
+- [x] Targeted RAW Data Quality profiling and preliminary experiment balance
+- [ ] Full Data Quality / temporal and experiment validity gates
 - [ ] dbt transformations and trusted data models
-- [ ] Customer behavior analysis and feature engineering
-- [ ] Campaign effectiveness and segment-level uplift analysis
-- [ ] Post-MVP: Predictive uplift modeling
+- [ ] Customer behavior analysis and pre-treatment features
+- [ ] Campaign effectiveness and segment-level heterogeneity analysis
+- [ ] Post-MVP: individual uplift modeling
 
 ---
 
-*This repository documents an ongoing portfolio project. Analytical findings, models, and documentation will be expanded as development progresses. No causal conclusions are claimed at this stage.*
+*This public repository documents an evolving portfolio project. No causal or unsupported revenue claims are made at this stage.*
