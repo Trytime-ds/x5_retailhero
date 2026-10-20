@@ -1,42 +1,53 @@
 # X5 RetailHero — Staging contracts (Session 03)
 
-Status: **PROPOSED / awaiting execution**. This file records code decisions, not QA results.
+Status: **PASS — technical staging gate, within the tests and reconciliations executed on 2026-10-20**.
 
-## Architecture and naming
+This document records the transformation contracts and the actual validation evidence shared from local dbt and BigQuery executions. It does **not** certify experimental causal identification, feature temporal eligibility, or financial metric semantics.
+
+## Architecture and grain
 
 - RAW: immutable `x5_raw` sources, originally loaded as `STRING`.
-- STAGING: views in `x5_dbt_dev` by default, one source row to one staging row.
-- No joins, deduplication, filtering, business aggregates, causal conclusions or monetary KPIs in staging.
-- Unknown business meanings are left open rather than inferred.
+- STAGING: BigQuery views in `x5_dbt_dev` by default.
+- One source row to one staging row: no filters, joins, deduplication, business aggregates, or imputation.
+- Source expressions use `{{ source('x5_raw', '<table>') }}` in dbt.
+- Business semantics that have not been substantiated remain unresolved.
 
-| Model | Expected grain | Expected source/staging rows |
-|---|---|---:|
-| stg_clients | `client_id` | 400,162 |
-| stg_products | `product_id` | 43,038 |
-| stg_purchases | (`client_id`, `transaction_id`, `product_id`) | 45,786,568 |
-| stg_uplift_train | `client_id` | 200,039 |
-| stg_uplift_test | `client_id` | 200,123 |
+| Model | Expected grain | RAW rows | Staging rows | Row-count check |
+|---|---|---:|---:|---|
+| `stg_clients` | `client_id` | 400,162 | 400,162 | PASS |
+| `stg_products` | `product_id` | 43,038 | 43,038 | PASS |
+| `stg_purchases` | (`client_id`, `transaction_id`, `product_id`) | 45,786,568 | 45,786,568 | PASS |
+| `stg_uplift_train` | `client_id` | 200,039 | 200,039 | PASS |
+| `stg_uplift_test` | `client_id` | 200,123 | 200,123 | PASS |
 
-Counts are session 1/2 source benchmarks, not independently rechecked on 2026-10-20.
+Observed RAW counts also matched the previously recorded source benchmarks.
 
-## Casts and anomaly contracts
+## Type conversion and anomaly contracts
 
-- Clients: age -> `INT64`; loyalty timestamps -> `DATETIME`; input strings retained for audit. Age outside 18–100 is only a review flag and does not remove clients. Missing first redemption remains missing. Redemption-before-issue is flagged based on full datetime comparison.
-- Products: `netto` -> `NUMERIC` (provisional); `is_own_trademark` and `is_alcohol` parsed as integer codes (provisional). Raw codes preserved; *do not interpret* them as true/false until actual value distributions are checked.
-- Purchases: timestamps -> `DATETIME` without inventing a timezone; quantities, purchase_sum, points, trn_sum values -> `NUMERIC`. Raw transaction timestamp, quantity, amount retained. Zero and extreme quantities are flagged but not modified. Other numeric cast failures are flagged collectively for further investigation.
-- Experiment: treatment and target -> `INT64`; `target` is an outcome indicator, not post-treatment monetary transaction data. `uplift_test` contains only the client ID.
-- Invalid nonempty raw values that cannot be cast produce `NULL` *and a diagnostic flag*. Other nullable results can be from true source missingness and need validation.
+- Clients: `age` → `INT64`; loyalty timestamps → `DATETIME`; raw strings retained for audit. Suspicious ages and chronology are flagged, never dropped.
+- Products: `netto` → `NUMERIC` provisionally; `is_own_trademark` and `is_alcohol` → integer codes, with raw values retained. Codes `0` and `1` were observed; semantic confirmation is separate from type validation.
+- Purchases: timestamps → `DATETIME` without inventing a timezone; quantity, ticket-level amount candidate, points and loyalty-related amounts → `NUMERIC`. Raw timestamp, quantity and amount strings retained. Zero and extreme quantities are flagged, not modified.
+- Experiment: `treatment_flg` and `target` → `INT64`; `target` is a binary purchase outcome, not monetary post-campaign transaction detail.
+- Failed casts of nonempty values produce a `NULL` and a corresponding diagnostic flag, wherever implemented. Missing source values remain distinct from invalid nonempty values.
 
-## Gates and unresolved semantics
+## Execution evidence — 2026-10-20
 
-- No causal conclusion: assignment method not verified, exact T0 and outcome window not available. The +3.3231 pp treatment/control difference remains descriptive unless identification assumptions are defensible.
-- 2019-03-18 is the end of observed purchase history, not a verified intervention time. Do not promote loyalty dates to pre-treatment features by default, even if they fall before this exploratory cutoff.
-- Do not sum purchase_sum at line grain. Its economic meaning, quantity units and some loyalty/points/code semantics remain open.
-- Source integrity passed in Sessions 1–2; staging tests and reconciliation are separate gates. No pass can be recorded until executed.
+Executed by the project owner on the local dbt Core 1.12.6 / dbt-bigquery 1.12.1 environment against BigQuery in US:
 
-## Test policy
+- `dbt run --project-dir dbt --select path:models/staging`: **PASS 5/5 views**, no errors.
+- `dbt test --project-dir dbt --select path:models/staging`: **PASS 20/20 data tests**, no warnings or errors.
+- `sql/qa/08_staging_reconciliation.sql`: **PASS 5/5 RAW↔staging row counts**; all RAW counts also match the documented baselines.
+- `stg_purchases`: 45,786,568 lines; **2,707,278** zero-quantity lines; **3** quantity values above 1,000; **0** failed transaction datetime, quantity, amount and other evaluated numeric casts.
+- `stg_clients`: 400,162 rows; **96** negative ages, **42** zero ages, **5,414** ages 1–17, **1,049** ages over 100; **35,469** missing redemption dates; **536** redemptions before issue; **0** evaluated age/date cast failures.
+- `stg_products`: 43,038 rows; **0** failures converting `netto`, own-trademark and alcohol codes; observed code values `0` and `1` for both binary-like fields.
 
-- dbt generic tests: client/product/train/test key uniqueness + not_null; purchase key components and critical numeric/date casts not_null; train/test clients in customer source; binary accepted values.
-- 45.8M-line composite uniqueness and complete purchase referential integrity were validated on RAW. Do not add redundant high-cost tests to every default dbt invocation without measuring warehouse cost.
-- Reconciliation script: `sql/qa/08_staging_reconciliation.sql`. Run after `dbt run`, check source/staging counts and anomalies, then examine failures before declaring staging PASS.
-- SQL, schema YML and reconciliation results are prepared as a *proposed patch*. Neither dbt runs nor BigQuery checks were executed by the assistant.
+Evidence was provided as terminal and query results; the assistant did not independently run dbt or access the BigQuery tables. Passing row-count checks cannot alone prove every field value is unchanged or semantically correct.
+
+## Tests and scope limitations
+
+- dbt data tests: client/product/train/test key `not_null` + `unique`; purchase key components and critical numeric/date fields `not_null`; train/test clients `relationships` against customers; binary `accepted_values` for treatment and target.
+- Purchase composite-key uniqueness and purchase-to-client/product integrity had previously been validated directly on RAW. These expensive checks were intentionally not duplicated in every default dbt run.
+- No causal claim: assignment mechanism, communication timestamp T0 and outcome window remain unverified. The observed +3.3231 percentage point treatment/control conversion difference remains **descriptive**.
+- 2019-03-18 is the end of observed purchase history, not verified intervention time; loyalty timestamps are **not** automatically eligible pre-treatment features.
+- `purchase_sum` is repeated at product-line grain: do **not** sum over product lines. Monetary semantics, quantity units and some product/loyalty code semantics remain open.
+- Any future model changes require rerunning dbt tests and relevant reconciliation checks.
