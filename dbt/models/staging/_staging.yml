@@ -1,0 +1,90 @@
+version: 2
+
+models:
+  - name: stg_clients
+    description: >
+      One row per client. Original loyalty dates are retained and typed but
+      are not automatically valid pre-treatment features. Diagnostic age and
+      date flags do not remove records.
+    columns:
+      - name: client_id
+        description: Unique client key.
+        data_tests: [not_null, unique]
+      - name: age
+        description: Parsed age; suspicious ages are preserved and flagged.
+      - name: first_issue_datetime
+        description: Parsed first loyalty issue timestamp; treatment timing unknown.
+      - name: first_redeem_datetime
+        description: Parsed first loyalty redemption timestamp; treatment timing unknown.
+
+  - name: stg_products
+    description: One row per catalog product, including unresolved raw code semantics.
+    columns:
+      - name: product_id
+        description: Unique product key.
+        data_tests: [not_null, unique]
+      - name: is_own_trademark_code
+        description: Provisional integer parse; code semantics require profiling.
+      - name: is_alcohol_code
+        description: Provisional integer parse; code semantics require profiling.
+
+  - name: stg_purchases
+    description: >
+      One row per original client x transaction x product line.
+      purchase_sum is repeated at line grain; do not sum it here.
+    columns:
+      - name: client_id
+        data_tests: [not_null]
+      - name: transaction_id
+        data_tests: [not_null]
+      - name: product_id
+        data_tests: [not_null]
+      - name: transaction_datetime
+        description: Typed DATETIME; source timezone is unspecified.
+        data_tests: [not_null]
+      - name: product_quantity
+        description: Typed NUMERIC; 0 and extreme quantities intentionally retained.
+        data_tests: [not_null]
+      - name: purchase_sum
+        description: Typed NUMERIC; NOT safe to sum per product line.
+        data_tests: [not_null]
+
+  - name: stg_uplift_train
+    description: One row per training client; treatment assignment is not independently verified.
+    columns:
+      - name: client_id
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('stg_clients')
+                field: client_id
+      - name: treatment_flg
+        description: Experimental communication indicator; 0 or 1.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+      - name: target
+        description: Binary post-communication purchase outcome; precise window unknown.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+
+  - name: stg_uplift_test
+    description: One row per scoring client, without a training label or treatment field.
+    columns:
+      - name: client_id
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('stg_clients')
+                field: client_id

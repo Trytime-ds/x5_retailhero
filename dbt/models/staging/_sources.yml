@@ -1,0 +1,24 @@
+
+version: 2
+
+sources:
+  - name: x5_raw
+    description: "Original X5 RetailHero datasets."
+    database: x5-retailhero-analytics-2026
+    schema: x5_raw
+
+    tables:
+      - name: clients
+        description: "Customer attributes and loyalty history."
+
+      - name: products
+        description: "Product catalog and attributes."
+
+      - name: purchases
+        description: "Historical purchases before communication."
+
+      - name: uplift_train
+        description: "Treatment assignment and binary outcome."
+
+      - name: uplift_test
+        description: "Customers reserved for scoring."
