@@ -26,3 +26,17 @@ Thumbs.db
 
 # Raw datasets
 data/
+
+# Compressed datasets
+*.csv.gz
+*.tsv
+*.jsonl
+
+# Additional credential formats
+*.pem
+*.p12
+*credentials*.json
+*secret*.json
+
+# dbt execution logs generated at repository root
+/logs/
