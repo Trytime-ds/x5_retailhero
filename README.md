@@ -14,7 +14,7 @@ The project combines SQL-based analysis, analytics engineering, customer segment
 
 ## Tech Stack
 
-**Google Cloud Storage · BigQuery · SQL · dbt (planned) · Python (post-MVP) · Git**
+**Google Cloud Storage · BigQuery · SQL · dbt Core · Python (post-MVP) · Git**
 
 ## Current Progress
 
@@ -26,16 +26,26 @@ The project combines SQL-based analysis, analytics engineering, customer segment
 - Performed targeted quantity, demographics and loyalty-date QA.
 - Assessed source historical time coverage and measured treatment/control covariate balance.
 
-**Current focus: dbt source declarations, staging casts and risk-based tests.** The analyzed groups show good balance on the observed covariates; nevertheless, treatment randomization, exact campaign timing and outcome window have not been confirmed. The observed +3.3231 percentage point conversion difference must **not** be interpreted as proven SMS incrementality.
+**Phase 2 — dbt source registration and staging: Technical gate PASS**
 
-See [`docs/DECISIONS.md`](docs/DECISIONS.md) for evidence, limitations and technical decisions; [`CHANGELOG.md`](CHANGELOG.md) for milestones.
+- Defined five RAW sources and created five typed, one-to-one staging views.
+- Executed **20/20 passing dbt data tests**.
+- Reconciled **5/5 RAW-to-staging row counts** and preserved documented purchase/client anomalies.
+- Retained flagged unusual values, rather than deleting or silently correcting data.
+
+**Current focus: intermediate business logic and customer behavioral features**, with careful restrictions on pre-treatment data eligibility and economic metric interpretation.
+
+Observed treatment/control covariate balance does **not** establish randomization. The intervention time, assignment mechanism and outcome observation window have not been verified. The observed +3.3231 percentage point conversion difference must **not** be interpreted as proven SMS incrementality.
+
+See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence](docs/STAGING_CONTRACTS.md), [dbt execution instructions](dbt/README.md), and [milestones](CHANGELOG.md).
 
 ## Roadmap
 
 - [x] Source ingestion and structural relationship validation
 - [x] Targeted RAW Data Quality profiling and preliminary experiment balance
-- [ ] Full Data Quality / temporal and experiment validity gates
-- [ ] dbt transformations and trusted data models
+- [x] dbt sources, staging models, initial data tests and row-count reconciliation
+- [ ] Broader Data Quality / temporal and experiment validity gates
+- [ ] Intermediate transformations and trusted analytical marts
 - [ ] Customer behavior analysis and pre-treatment features
 - [ ] Campaign effectiveness and segment-level heterogeneity analysis
 - [ ] Post-MVP: individual uplift modeling
