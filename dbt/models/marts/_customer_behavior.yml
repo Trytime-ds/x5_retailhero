@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: mart_customer_behavior_snapshot
+    description: >
+      Descriptive snapshot at the last observed purchase date (2019-03-18
+      in the current dataset), NOT a verified pre-SMS or causal feature set.
+      Trailing 30/60/90-day windows include the snapshot date, using
+      inclusive day-offset ranges 0..29, 0..59 and 0..89.
+      One row per client from int_customer_purchase_history.
+    columns:
+      - name: client_id
+        description: Client key, exactly one row per source client.
+        data_tests: [not_null, unique]
+      - name: observed_snapshot_date
+        description: Observed history end date, NOT treatment T0.
+        data_tests: [not_null]
+      - name: transactions_observed_total
+        description: All ticket rows in the observed purchase-history period.
+        data_tests: [not_null]
+      - name: recency_days_at_history_end
+        description: Recency from last historical ticket to observed snapshot date.
+      - name: transactions_30d
+        description: Ticket count on snapshot day and 29 prior calendar days.
+        data_tests: [not_null]
+      - name: transactions_60d
+        description: Ticket count on snapshot day and 59 prior calendar days.
+        data_tests: [not_null]
+      - name: transactions_90d
+        description: Ticket count on snapshot day and 89 prior calendar days.
+        data_tests: [not_null]
+      - name: active_days_30d
+        description: Distinct purchase dates in the 30-day observation window.
+      - name: active_days_60d
+        description: Distinct purchase dates in the 60-day observation window.
+      - name: active_days_90d
+        description: Distinct purchase dates in the 90-day observation window.
+      - name: distinct_stores_90d
+        description: Distinct stores observed in the 90-day window.
+      - name: purchase_lines_90d
+        description: Source product-line counts within the 90-day window, not units.

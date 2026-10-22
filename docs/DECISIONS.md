@@ -106,4 +106,20 @@ User-executed `dbt run` 1/1 PASS, `dbt test` 8/8 PASS; BigQuery QA
 8/8 TRUE: 400,162 clients, 8,045,229 tickets and 45,786,568 lines
 reconciled with zero/extreme anomalies preserved. This technical
 PASS does not establish causal, economic, or treatment-time validity.
-PR #4 remains pending merge.
+PR #4 merged into main as commit `83566a0`.
+
+## DEC-013 — Descriptive 30/60/90-day customer snapshot mart (Session 04)
+The first mart retains one row per client (400,162 source clients)
+and reports ticket counts and active days over nested, inclusive trailing
+calendar windows: 30d offsets 0..29, 60d offsets 0..59, and 90d
+offsets 0..89. All dates are anchored at the final observed
+purchase-history day (2019-03-18), **not** established SMS T0.
+Preserve total historical frequency and recency from the validated
+Intermediate customer entity; avoid unverified monetary and loyalty
+semantics, unit quantities, treatment/outcomes and arbitrary segments.
+User-executed dbt run 1/1 PASS, dbt test 9/9 PASS; BigQuery QA
+9/9 TRUE. Window source/mart tickets: 2,444,257 (30d),
+4,534,601 (60d), 6,393,058 (90d), and 36,583,505
+product lines in 90d. No invalid nested-window rows observed.
+This is a descriptive behavioral mart only: causal and treatment-time
+validity gates remain open. PR #5 pending final review and merge.
