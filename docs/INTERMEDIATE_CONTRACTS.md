@@ -1,37 +1,62 @@
 # X5 RetailHero — Intermediate transaction contracts (Session 04)
 
-**Status: DRAFT / NOT YET VALIDATED.** Do not mark the intermediate gate as PASS
-before reviewing actual local dbt and BigQuery execution evidence.
+**Status: PASS — transaction intermediate technical and reconciliation gate, 2026-10-22.**
+Verified against the owner's local dbt Core execution and BigQuery US query
+results. The assistant did not independently execute dbt or warehouse queries.
+PR #3 remains subject to review and merge.
 
 ## Model and decision scope
 
 - Model: `int_transactions`, one row per `(client_id, transaction_id)`.
 - Input: `ref('stg_purchases')`, one row per original product line.
-- Historical expected output: **8,045,229 tickets** from **45,786,568 product lines**.
-- Pre-build profiling on 2026-10-22 observed **zero** tickets with inconsistent
-  `store_id`, `transaction_datetime`, or `purchase_sum`, and no null-store tickets.
-- Reported `purchase_sum` is repeated on every source product line. Taking one
-  value per ticket avoids line-count multiplication; it does **not** establish
-  monetary semantics or authorize claims of revenue, ROI or incrementality.
-- Date partitioning uses `DATE(transaction_datetime)` and client clustering;
-  no source timezone is assumed.
-- `product_quantity` is not summed as purchased units; source units are
-  unresolved. Preserve counts of 0-quantity and >1000-quantity lines.
+- Actual row count: **8,045,229 tickets** from **45,786,568 product lines**.
+- Source and model QA observed **zero** tickets with inconsistent
+  `store_id`, `transaction_datetime`, or `purchase_sum`.
+- `purchase_sum_reported` takes one repeated source value per ticket;
+  it is **not** validated as revenue, and the model computes neither ROI
+  nor incremental spending.
+- Materialization: BigQuery **table**, partitioned by
+  `transaction_date = DATE(transaction_datetime)`, clustered by
+  `client_id`. Source datetime timezone remains unspecified.
+- Quantities are not summed into purchased units: source units are unresolved.
+  The model retains line counts and zero/extreme quantity diagnostics.
 - No loyalty timestamps, post-treatment outcomes, or treatment flags enter
-  this transaction-level historical model.
+  the historical transaction model.
 
-## Expected QA
+## Execution evidence — 2026-10-22
 
-1. Ticket grain unique and key components not null.
-2. Ticket attributes consistent across source lines (singular test).
-3. Derived line/product/anomaly counts satisfy range checks.
-4. Reconciliation: `SUM(line_count) = 45,786,568`.
-5. Anomaly preservation: `SUM(zero_quantity_line_count) = 2,707,278`;
-   `SUM(extreme_quantity_line_count) = 3`.
-6. All dbt runs/tests must pass, followed by
-   `sql/qa/09_intermediate_reconciliation.sql` in BigQuery US.
+| Control | Observed result | Status |
+|---|---:|---|
+| dbt run `int_transactions` | 1/1 model created | PASS |
+| dbt test `int_transactions` | 10/10 data tests | PASS |
+| Materialized rows (BigQuery reconciliation) | 8,045,229 | PASS |
+| Recovered/source product lines | 45,786,568 / 45,786,568 | PASS |
+| Recovered/source zero-quantity lines | 2,707,278 / 2,707,278 | PASS |
+| Recovered/source extreme-quantity lines | 3 / 3 | PASS |
+| Store, datetime and purchase_sum inconsistencies | 0 / 0 / 0 | PASS |
+| Reconciliation booleans | 6/6 TRUE | PASS |
 
-## Runbook (from repository root)
+- `dbt run --project-dir dbt --select int_transactions` reported
+  8.0m rows (rounded by dbt), **3.5 GiB processed**, and
+  **24.74 seconds** total execution (model create: 16.73 seconds).
+- `dbt test --project-dir dbt --select int_transactions` reported
+  **10 PASS**, 0 WARN, 0 ERROR, and **17.03 seconds**.
+- `sql/qa/09_intermediate_reconciliation.sql` yielded all six PASS
+  booleans. This establishes aggregate reconciliation, not a row-by-row
+  audit of every field.
+
+## Quality gates and limitations
+
+**PASS within scope:** ticket grain uniqueness, not-null mandatory fields,
+source-ticket attribute consistency, derived-count ranges and full
+line/anomaly aggregate preservation.
+
+**Open outside scope:** business meaning/currency of `purchase_sum`;
+`product_quantity` measurement units; campaign T0, outcome window,
+randomization and causal identification. Do not interpret 2019-03-18
+(the purchase-history end) as confirmed intervention time.
+
+## Runbook (repository root)
 
 ```bash
 dbt ls --project-dir dbt --select int_transactions
@@ -39,5 +64,6 @@ dbt run --project-dir dbt --select int_transactions
 dbt test --project-dir dbt --select int_transactions
 ```
 
-**Gate remains OPEN.** Record actual output counts, tests, runtime/cost
-observations and any exceptions before final merge into main.
+Then run `sql/qa/09_intermediate_reconciliation.sql` in BigQuery US.
+PR review and merge are distinct workflow steps and must be completed
+before this implementation is described as integrated into `main`.

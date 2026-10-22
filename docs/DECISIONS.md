@@ -76,3 +76,18 @@ Temporal/leakage: PARTIAL (loyalty data outlast purchase history).
 Monetary semantics of purchase_sum are still unverified.
 Proceed to dbt sources/staging with explicit types and flags;
 continue withholding causal and SMS economic claims.
+
+
+## DEC-011 — Transaction-level intermediate model (Session 04)
+One row per `(client_id, transaction_id)` in `int_transactions`.
+Ticket-level `store_id`, `transaction_datetime` and `purchase_sum`
+were found consistent across lines: zero inconsistent tickets across
+8,045,229 tickets. Aggregate validation on 2026-10-22 reconciled
+45,786,568 original lines, 2,707,278 zero-quantity lines and three
+extreme-quantity lines, all six QA checks TRUE, and 10/10 dbt tests PASS.
+Materialize as a BigQuery date-partitioned, client-clustered table.
+Retain `purchase_sum_reported` exactly once per transaction, but
+**do not call it validated revenue**; no SMS incremental revenue,
+ROI or causality claims are supported. Preserve anomaly line counts,
+not unvalidated quantity units. PASS is limited to the transaction
+model gate; the PR merge is a separate approval.
