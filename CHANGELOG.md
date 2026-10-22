@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-10-22 — Session 04 (intermediate / PR #3, pending merge)
+
+### Added
+- `int_transactions` at `(client_id, transaction_id)` grain, with BigQuery
+  date partitioning and client clustering.
+- YAML schema, three singular dbt tests, SQL reconciliation, and
+  `docs/INTERMEDIATE_CONTRACTS.md`.
+
+### Validated (owner-executed, BigQuery US)
+- `dbt run`: 1/1 PASS; 8.0m rows (rounded), 3.5 GiB processed,
+  24.74 seconds total elapsed.
+- `dbt test`: 10/10 PASS, 0 warnings/errors.
+- QA SQL: 8,045,229 transactions; 45,786,568 source lines recovered;
+  2,707,278 zero-quantity lines and 3 extreme lines preserved.
+- Store/datetime/reported-purchase-sum inconsistencies: zero.
+  All six reconciliation checks: TRUE.
+
+### Boundaries and next steps
+- Ticket model gate PASS within executed tests; PR #3 remains a Draft
+  pending code review and explicit merge decision.
+- Source amount semantics and causal/temporal experiment validity remain open.
+- Next: customer historical behavior / features design, then marts.
+
+## 2026-10-20 — Session 03 (dbt staging / PR #2)
+
+### Added
+- Five typed one-to-one staging views, dbt source definitions and contracts.
+- Preservation flags and raw-value audit fields for anomalous source values.
+
+### Validated
+- `dbt run`: 5/5 PASS; `dbt test`: 20/20 PASS.
+- RAW-to-staging row counts: 5/5 exact reconciliations.
+- Known purchase/client anomalies preserved; no validated cast failures.
+
+### Limits
+- Staging PASS does not establish monetary meanings, pre-treatment loyalty
+  feature eligibility or experiment randomization.
+
 ## 2026-10-19 — Session 02
 
 ### Added
