@@ -1,6 +1,29 @@
 # Changelog
 
-## 2026-10-22 — Session 04 (customer history / PR #4 pending review)
+## 2026-10-22 — Session 04 (behavior mart / PR #5 pending review)
+
+### Added
+- `mart_customer_behavior_snapshot` with one row per customer, observed
+  total activity and inclusive 30/60/90-day ticket/active-day windows.
+- Three singular dbt tests, schema contracts, BigQuery QA reconciliation
+  and an explicit observed-history (not T0) temporal contract.
+
+### Validated (owner-executed, BigQuery US)
+- `dbt run` 1/1 PASS; 400.2k CLI-rounded rows; 336.3 MiB processed;
+  20.63s total, of which 12.31s in model statement.
+- `dbt test` 9/9 PASS; 0 WARN/ERROR; 15.90s total.
+- BigQuery reconciliations 9/9 TRUE: customer universe 400,162;
+  8,045,229 all-history tickets; 2,444,257 / 4,534,601 /
+  6,393,058 tickets over 30/60/90 days; 36,583,505 90d lines.
+- Snapshot 2019-03-18, observed first date 2018-11-21;
+  no invalid window rows. PR #5 remains under review.
+
+### Boundaries
+- Observed calendar cutoff is not verified SMS T0.
+  This descriptive mart does not establish causal feature eligibility,
+  unvalidated revenue, product units or treatment impact.
+
+## 2026-10-22 — Session 04 (customer history / PR #4 merged)
 
 ### Added
 - `int_customer_purchase_history`, one row per client, with historical
@@ -21,7 +44,8 @@
   no-purchase-client fallback is designed but not exercised.
 
 ### Boundaries
-- Model gate PASS within QA scope; PR #4 awaiting review/merge.
+- Model gate PASS within QA scope; PR #4 merged into main
+  as commit `83566a0`.
 - Business value and timing of SMS, randomization, outcome window,
   income semantics and loyalty variables remain unresolved.
 
