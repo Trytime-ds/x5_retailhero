@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: int_transactions
+    description: >
+      One row per (client_id, transaction_id), rolled up from stg_purchases.
+      All source purchase lines are accounted for. purchase_sum_reported is a
+      ticket-level source value with unverified monetary semantics.
+      This model does not compute revenue, incremental spend, or unit volumes.
+    columns:
+      - name: client_id
+        description: Client key, unique only with transaction_id.
+        data_tests: [not_null]
+      - name: transaction_id
+        description: Transaction key, unique only with client_id.
+        data_tests: [not_null]
+      - name: transaction_datetime
+        description: DATETIME derived from a consistent source value; timezone unknown.
+        data_tests: [not_null]
+      - name: transaction_date
+        description: DATE derived from transaction_datetime for partitioning.
+        data_tests: [not_null]
+      - name: store_id
+        description: Store key, valid when ticket consistency test passes.
+        data_tests: [not_null]
+      - name: purchase_sum_reported
+        description: >
+          One reported purchase_sum per ticket, not validated as revenue.
+          Source currency and business meaning remain unverified.
+        data_tests: [not_null]
+      - name: line_count
+        description: Number of original source lines in the ticket.
+        data_tests: [not_null]
+      - name: distinct_product_count
+        description: Number of distinct product keys in the ticket.
+      - name: zero_quantity_line_count
+        description: Number of original zero-quantity product lines.
+      - name: extreme_quantity_line_count
+        description: Number of original product lines with quantity over 1000.
+      - name: has_store_inconsistency
+        description: More than one store value or any null store in the ticket.
+      - name: has_datetime_inconsistency
+        description: More than one transaction datetime or any null datetime.
+      - name: has_purchase_sum_inconsistency
+        description: More than one purchase_sum or any null amount.
