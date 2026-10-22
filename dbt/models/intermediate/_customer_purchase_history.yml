@@ -1,0 +1,42 @@
+version: 2
+
+models:
+  - name: int_customer_purchase_history
+    description: >
+      One row per source client with descriptive aggregates from all observed
+      historical tickets. The recency reference is the observed purchase-history
+      end, not the intervention timestamp (T0). Not a verified SMS-era
+      pre-treatment feature set.
+    columns:
+      - name: client_id
+        description: Client key; includes clients with no observed purchases.
+        data_tests: [not_null, unique]
+      - name: has_purchase_history
+        description: TRUE if at least one ticket exists in int_transactions.
+        data_tests: [not_null]
+      - name: transaction_count
+        description: Observed number of tickets; 0 for clients without purchases.
+        data_tests: [not_null]
+      - name: active_purchase_days
+        description: Number of distinct calendar days with purchases.
+      - name: distinct_store_count
+        description: Number of unique stores visited (not store transactions).
+      - name: purchase_line_count
+        description: Total source product lines represented by the client's tickets.
+      - name: zero_quantity_line_count
+        description: Preserved source lines with zero product quantity.
+      - name: extreme_quantity_line_count
+        description: Preserved source lines where product quantity exceeds 1000.
+      - name: first_purchase_date
+        description: First calendar date of purchase, or NULL if no purchases.
+      - name: last_purchase_date
+        description: Last calendar date of purchase, or NULL if no purchases.
+      - name: observed_history_end_date
+        description: MAX(transaction_date) across the observed source history; NOT T0.
+        data_tests: [not_null]
+      - name: recency_days_at_history_end
+        description: >
+          Date difference in days from last purchase to observed history end.
+          NULL for clients with no purchases; NOT recency relative to SMS.
+      - name: observed_purchase_span_days
+        description: Days between first and last observed purchase; NULL if none.
