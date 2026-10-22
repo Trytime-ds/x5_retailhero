@@ -33,7 +33,7 @@ The project combines SQL-based analysis, analytics engineering, customer segment
 - Reconciled **5/5 RAW-to-staging row counts** and preserved documented purchase/client anomalies.
 - Retained flagged unusual values, rather than deleting or silently correcting data.
 
-**Phase 3 — Intermediate transaction model: Technical and reconciliation gate PASS (PR #3 pending merge)**
+**Phase 3 — Intermediate transaction model: Technical and reconciliation gate PASS (PR #3 merged)**
 
 - Constructed `int_transactions` at one row per client×transaction, materialized
   as a BigQuery table partitioned by transaction date and clustered by client.
@@ -41,13 +41,24 @@ The project combines SQL-based analysis, analytics engineering, customer segment
 - Reconciled **8,045,229 transactions** and all **45,786,568 product lines**,
   including 2,707,278 zero-quantity lines and three extreme-quantity lines.
 - Retained `purchase_sum_reported` once per ticket without asserting its
-  business/currency semantics. Merge into `main` remains pending review.
+  business/currency semantics. Integrated into `main` via PR #3.
 
-**Current focus: trusted historical customer behavior and features**, with careful restrictions on pre-treatment data eligibility and economic metric interpretation.
+**Phase 4 — Customer purchase history: Technical and reconciliation gate PASS (PR #4 pending merge)**
+
+- Built `int_customer_purchase_history` at one row per client, with
+  observed ticket frequency, days active, store diversity and historical recency.
+- Executed **8/8 passing dbt tests** and **8/8 passing BigQuery reconciliations**.
+- Reconciled **400,162** distinct clients, **8,045,229** tickets and
+  **45,786,568** original lines, with zero/excess-quantity counts conserved.
+- All source clients currently have historical purchases; no-purchase
+  handling remains a defensive contract for future updates.
+- `2019-03-18` is the observed history end, **not** confirmed campaign T0.
+
+**Current focus: preparing trusted historical customer features and experiment analysis**, with careful restrictions on temporal eligibility and economic interpretation.
 
 Observed treatment/control covariate balance does **not** establish randomization. The intervention time, assignment mechanism and outcome observation window have not been verified. The observed +3.3231 percentage point conversion difference must **not** be interpreted as proven SMS incrementality.
 
-See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence](docs/STAGING_CONTRACTS.md), [intermediate contracts and QA](docs/INTERMEDIATE_CONTRACTS.md), [dbt execution instructions](dbt/README.md), and [milestones](CHANGELOG.md).
+See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence](docs/STAGING_CONTRACTS.md), [transaction contracts and QA](docs/INTERMEDIATE_CONTRACTS.md), [customer history contract and QA](docs/CUSTOMER_PURCHASE_HISTORY_CONTRACTS.md), [dbt execution instructions](dbt/README.md), and [milestones](CHANGELOG.md).
 
 ## Roadmap
 
@@ -55,7 +66,8 @@ See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence
 - [x] Targeted RAW Data Quality profiling and preliminary experiment balance
 - [x] dbt sources, staging models, initial data tests and row-count reconciliation
 - [ ] Broader Data Quality / temporal and experiment validity gates
-- [x] Intermediate transaction foundation (PR #3 validated; merge pending)
+- [x] Intermediate transaction foundation (PR #3 merged)
+- [x] Customer purchase history intermediate foundation (PR #4 validated; merge pending)
 - [ ] Further intermediate models and trusted analytical marts
 - [ ] Customer behavior analysis and pre-treatment features
 - [ ] Campaign effectiveness and segment-level heterogeneity analysis

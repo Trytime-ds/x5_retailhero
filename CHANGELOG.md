@@ -1,6 +1,31 @@
 # Changelog
 
-## 2026-10-22 — Session 04 (intermediate / PR #3, pending merge)
+## 2026-10-22 — Session 04 (customer history / PR #4 pending review)
+
+### Added
+- `int_customer_purchase_history`, one row per client, with historical
+  frequency, active days, store diversity, first/last purchase and
+  recency relative to the **observed** history end, never SMS T0.
+- Eight dbt tests (schema and singular), SQL reconciliation and contract.
+
+### Validated (owner-executed, BigQuery US)
+- `dbt run` 1/1 PASS: 400.2k rounded rows, 434.2 MiB processed,
+  20.06 seconds total.
+- `dbt test` 8/8 PASS; 0 warnings/errors.
+- QA 8/8 TRUE: 400,162 clients and active clients, 8,045,229
+  transactions, 45,786,568 product lines, 2,707,278 zero-quantity
+  and 3 extreme-quantity lines, all totals reconciled.
+- History-end anchor 2019-03-18; zero null anchors, bad recency
+  clients or inactive clients with non-null recency.
+- All 400,162 observed clients have purchase history; the
+  no-purchase-client fallback is designed but not exercised.
+
+### Boundaries
+- Model gate PASS within QA scope; PR #4 awaiting review/merge.
+- Business value and timing of SMS, randomization, outcome window,
+  income semantics and loyalty variables remain unresolved.
+
+## 2026-10-22 — Session 04 (transactions / PR #3 merged)
 
 ### Added
 - `int_transactions` at `(client_id, transaction_id)` grain, with BigQuery
@@ -18,8 +43,8 @@
   All six reconciliation checks: TRUE.
 
 ### Boundaries and next steps
-- Ticket model gate PASS within executed tests; PR #3 remains a Draft
-  pending code review and explicit merge decision.
+- Ticket model gate PASS within executed tests; PR #3 merged into main
+  as commit `d0ea84c`.
 - Source amount semantics and causal/temporal experiment validity remain open.
 - Next: customer historical behavior / features design, then marts.
 

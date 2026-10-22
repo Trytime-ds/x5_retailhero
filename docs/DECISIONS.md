@@ -91,3 +91,19 @@ Retain `purchase_sum_reported` exactly once per transaction, but
 ROI or causality claims are supported. Preserve anomaly line counts,
 not unvalidated quantity units. PASS is limited to the transaction
 model gate; the PR merge is a separate approval.
+
+## DEC-012 — Customer-level observed purchase history (Session 04)
+`int_customer_purchase_history` uses `stg_clients` as the customer
+universe, left-joining aggregated, validated `int_transactions`.
+All 400,162 clients currently have observed transactions, so no-purchase
+fallback behavior (0 activity and NULL purchase dates/recency) is
+not exercised by the present data; retain it to protect future coverage.
+Recency is computed at the global last observed purchase date
+(2019-03-18), **not** the unverified intervention time T0.
+Use only historical ticket/day/store/line counts and dates, excluding
+unverified monetary, loyalty and experiment-specific fields.
+User-executed `dbt run` 1/1 PASS, `dbt test` 8/8 PASS; BigQuery QA
+8/8 TRUE: 400,162 clients, 8,045,229 tickets and 45,786,568 lines
+reconciled with zero/extreme anomalies preserved. This technical
+PASS does not establish causal, economic, or treatment-time validity.
+PR #4 remains pending merge.
