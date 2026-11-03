@@ -122,4 +122,39 @@ User-executed dbt run 1/1 PASS, dbt test 9/9 PASS; BigQuery QA
 4,534,601 (60d), 6,393,058 (90d), and 36,583,505
 product lines in 90d. No invalid nested-window rows observed.
 This is a descriptive behavioral mart only: causal and treatment-time
-validity gates remain open. PR #5 pending final review and merge.
+validity gates remain open. PR #5 merged on 2026-10-22 as commit `435e96a`.
+
+
+## DEC-014 — Observed experiment response analysis mart (Session 05 design)
+The owner approved the Session 05 contract on 2026-11-02. The owner-approved
+`mart_experiment_analysis` takes `stg_uplift_train` (200,039 clients)
+as its only labeled experimental universe, with **one row per client**
+and original binary `treatment_flg` and `target`. `stg_uplift_test`
+(200,123 unlabeled, disjoint customers) is excluded. A LEFT JOIN to
+`mart_customer_behavior_snapshot` supplies **descriptive historical
+context only**, never certified pre-treatment features. Rates are
+calculated within each source-defined arm, with group denominators;
+RD and RR are observed contrasts rather than causal estimands.
+On 2026-11-02, owner-executed pre-build BigQuery QA found source
+population = unique clients = 200,039, with 0 invalid arm/outcome
+values. The left join preserved all 100,058 control and 99,981
+treatment clients, 0 unmatched, 0 invalid observed anchors;
+response rates were 60.3280% and 63.6511% (difference +3.3231 pp).
+Post-build owner-reported evidence (2026-11-02): dbt model run **1/1 PASS**
+in 15.55 s; tests **17/17 PASS** in 20.77 s, with 0 warnings/errors.
+Independent BigQuery reconciliation reproduced both groups and all
+source outcomes (control: 100,058/60,363; treatment: 99,981/63,639),
+with 0 missing clients, 0 experimental/behavioral field mismatches,
+0 missing behavior matches, 0 invalid historical anchors, and
+**16/16 TRUE** flags across two arms. This validates structural/semantic
+parity within the modeled fields; it does NOT prove experiment
+randomization, outcome timing, or SMS causality. Owner-reported inferential BigQuery SQL (2026-11-02) independently
+reproduced: observed RD +3.3231 percentage points with approximate 95%
+CI [+2.8979, +3.7483] pp; observed RR 1.055084 with approximate 95%
+CI [1.047861, 1.062356]; pooled two-sided z=15.3093 and
+p < 1e-10. All three inferential boolean checks passed.
+These statistics depend on independent-binomial and large-sample
+assumptions; small p-values and confidence intervals do NOT establish
+causal SMS incrementality. Resource bytes/charges remain unreported,
+and owner review and merge of Draft PR #6 remain pending. Monetary, causal and targeting-deployment
+claims remain out of scope.

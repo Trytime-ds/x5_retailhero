@@ -1,5 +1,48 @@
 # Changelog
 
+## 2026-11-02 — Session 05 (experiment response mart / Draft PR #6)
+
+### Added and technically validated
+- Owner-approved `docs/EXPERIMENT_ANALYSIS_CONTRACTS.md` for 200,039
+  labeled train customers, one row per client.
+- `mart_experiment_analysis`, YAML and singular dbt tests for client/arm/outcome
+  parity and descriptive snapshot alignment.
+- `sql/qa/12_experiment_analysis_reconciliation.sql` (post-build),
+  `sql/qa/13_experiment_population_join_precheck.sql` (previously
+  owner-executed checks now versioned), and
+  `sql/analysis/02_experiment_observed_response.sql` (owner-executed),
+  and `sql/analysis/03_experiment_response_inference.sql` for 95% CIs
+  and a two-sided z-test (**owner-executed; reconciled to independent reference**).
+
+### Evidence and boundaries
+- Owner-executed **pre-build** BigQuery checks: 200,039 distinct train IDs;
+  0 invalid flags or targets; preserved 100,058 control and 99,981
+  treatment clients on join, with 0 unmatched history clients.
+- Source-defined response rates: control 60.3280%, treatment 63.6511%;
+  observed difference +3.3231 percentage points (NOT causal).
+- **Owner-run model execution:** `dbt run` 1/1 PASS, 15.55 s;
+  `dbt test` 17/17 PASS, 20.77 s; zero WARN/ERROR.
+- **Owner-run post-build reconciliation:** both arms match source counts
+  and response rates exactly, zero missing/mismatched clients and
+  behavior fields, zero invalid historical anchors; **16/16 TRUE**
+  (eight checks per arm). Total unique mart clients: 200,039.
+- **Owner-run inferential SQL:** difference +3.3231 pp, 95% CI
+  [+2.8979, +3.7483] pp; RR 1.055084, 95% CI
+  [1.047861, 1.062356]; pooled z=15.3093, two-sided p < 1e-10.
+  All three inferential boolean checks TRUE; owner-reported BigQuery
+  values match independent arithmetic reference.
+- These intervals and p-value are conditional on approximate
+  independent-binomial inference, **not an identified causal SMS effect**.
+- Bytes processed / monetary cost not yet supplied. Draft PR #6
+  remains unmerged, pending owner review.
+- No evidence of randomized assignment, verified SMS T0 or exact outcome
+  window; no SMS incremental revenue or uplift claim.
+
+### Session 04 status correction (verified on 2026-11-02)
+- PR #5 was actually merged to main on 2026-10-22 (squash `435e96a`).
+  Original contemporaneous “pending review” notes below describe the
+  pre-merge status, not the repository's current state.
+
 ## 2026-10-22 — Session 04 (behavior mart / PR #5 pending review)
 
 ### Added

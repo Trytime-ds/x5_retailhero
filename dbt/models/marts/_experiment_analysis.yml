@@ -1,0 +1,58 @@
+version: 2
+
+models:
+  - name: mart_experiment_analysis
+    description: >
+      Session 05 observed-response analysis base: exactly one row for each
+      stg_uplift_train customer (200039 in current source). The binary
+      treatment_flg and target fields are source-defined; randomization,
+      intervention T0, effective delivery and outcome observation window
+      are not independently verified. Joined historical behavior is
+      descriptive only and is NOT certified pre-treatment. This model
+      does not estimate causal uplift or monetary impact.
+    columns:
+      - name: client_id
+        description: Unique training-client key; scoring/test clients excluded.
+        data_tests: [not_null, unique]
+      - name: treatment_flg
+        description: Source-defined 0 control / 1 treatment indicator; not proven randomized.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+      - name: target
+        description: Source-defined binary outcome, exact time window unknown.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+      - name: observed_snapshot_date
+        description: Observed purchase-history cutoff (currently 2019-03-18); NOT SMS T0.
+        data_tests: [not_null]
+      - name: transactions_observed_total
+        description: Historical ticket count, not incremental purchases.
+        data_tests: [not_null]
+      - name: recency_days_at_history_end
+        description: Days since last observed ticket at historical cutoff; not verified pre-SMS.
+      - name: transactions_30d
+        description: Tickets on observed cutoff date and preceding 29 calendar dates.
+        data_tests: [not_null]
+      - name: transactions_60d
+        description: Tickets on observed cutoff date and preceding 59 calendar dates.
+        data_tests: [not_null]
+      - name: transactions_90d
+        description: Tickets on observed cutoff date and preceding 89 calendar dates.
+        data_tests: [not_null]
+      - name: active_days_30d
+        description: Distinct ticket dates in observed 30-day window.
+        data_tests: [not_null]
+      - name: active_days_60d
+        description: Distinct ticket dates in observed 60-day window.
+        data_tests: [not_null]
+      - name: active_days_90d
+        description: Distinct ticket dates in observed 90-day window.
+        data_tests: [not_null]
