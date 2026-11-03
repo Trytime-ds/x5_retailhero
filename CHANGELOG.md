@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-11-02 — Session 05 (experiment response mart / Draft PR #6)
+
+### Added (versioned; runtime validation pending)
+- Owner-approved `docs/EXPERIMENT_ANALYSIS_CONTRACTS.md` for 200,039
+  labeled train customers, one row per client.
+- `mart_experiment_analysis`, YAML and singular dbt tests for client/arm/outcome
+  parity and descriptive snapshot alignment.
+- `sql/qa/12_experiment_analysis_reconciliation.sql` (post-build),
+  `sql/qa/13_experiment_population_join_precheck.sql` (previously
+  owner-executed checks now versioned), and
+  `sql/analysis/02_experiment_observed_response.sql`.
+
+### Evidence and boundaries
+- Owner-executed **pre-build** BigQuery checks: 200,039 distinct train IDs;
+  0 invalid flags or targets; preserved 100,058 control and 99,981
+  treatment clients on join, with 0 unmatched history clients.
+- Source-defined response rates: control 60.3280%, treatment 63.6511%;
+  observed difference +3.3231 percentage points (NOT causal).
+- **No execution evidence yet for the new mart, its tests, or the new
+  post-build SQL**. Draft PR #6 must remain unmerged pending review/QA.
+- No evidence of randomized assignment, verified SMS T0 or exact outcome
+  window; no SMS incremental revenue or uplift claim.
+
+### Session 04 status correction (verified on 2026-11-02)
+- PR #5 was actually merged to main on 2026-10-22 (squash `435e96a`).
+  Original contemporaneous “pending review” notes below describe the
+  pre-merge status, not the repository's current state.
+
 ## 2026-10-22 — Session 04 (behavior mart / PR #5 pending review)
 
 ### Added
