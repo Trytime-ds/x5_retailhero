@@ -1,10 +1,10 @@
 # Experiment Analysis — Contract & Gates (Session 05)
 
-**Status:** CONTRACT APPROVED by owner (2026-11-02) / pre-build structural QA **PASS** / mart implemented in repository, **execution pending** / causal gate **NOT VERIFIED**.  
+**Status:** CONTRACT APPROVED / mart built and technical QA **PASS** (owner-executed 2026-11-02) / inferential analysis and owner PR review **PENDING** / causal gate **NOT VERIFIED**.  
 **Documented:** 2026-11-02.  
 **Repository branch:** `feature/experiment-analysis-mart`.  
 **Scope:** observed treatment/control response, descriptive behavioral context, and auditability.  
-**Source of evidence:** user-executed BigQuery queries reported in Session 05; not re-executed by GitHub Actions or the assistant.
+**Source of evidence:** owner-reported BigQuery and dbt CLI outputs from Session 05; not independently re-executed by GitHub Actions or the assistant. Actual bytes processed and monetary costs were not supplied.
 
 ## 1. Business question and inference boundary
 
@@ -115,6 +115,17 @@ The two pre-build checks are now versioned in `sql/qa/13_experiment_population_j
 
 ## 5. Statistical analysis protocol (planned, not executed)
 
+### Post-build technical execution evidence — owner-reported (2026-11-02)
+
+- `dbt run --select mart_experiment_analysis`: **1/1 PASS**, **0 WARN, 0 ERROR**, execution time **15.55 s**.
+- `dbt test --select mart_experiment_analysis`: **17/17 PASS**, **0 WARN, 0 ERROR, 0 SKIP**, execution time **20.77 s**.
+- `sql/qa/12_experiment_analysis_reconciliation.sql`: **2 arm rows returned**. Both arms matched source counts, source-positive and negative outcomes, source-to-mart rates, and historical context.
+- Per-arm QA: `missing_clients = 0`, `experiment_field_mismatches = 0`, `behavior_unmatched = 0`, `behavior_field_mismatches = 0`, `invalid_observed_anchor = 0`.
+- All **eight** `*_pass` flags **TRUE** on both arms (**16 TRUE results**). Distinct clients in the mart = **200,039**.
+- **Not measured/reported yet:** warehouse bytes processed and charges; these must not be fabricated. `dbt debug` output, CI execution, and inferential uncertainty analysis have not been independently evidenced.
+
+These PASS results validate model integrity under the specified checks, **not** SMS incrementality, intervention timing, randomization, or causal identification.
+
 1. Report group-specific numerators, denominators, and observed response rates.
 2. Report absolute difference (percentage points), risk ratio, and relative difference; distinguish their units.
 3. Estimate confidence intervals (e.g., 95%) for group response rates and group differences using an explicitly selected method.
@@ -131,25 +142,26 @@ Before merge, the owner must review this contract and approve the proposed custo
 
 - [x] Contract and descriptive-only model scope approved by owner in conversation, 2026-11-02.
 - [x] Draft PR #6 opened; implementation remains within that PR and branch.
-- [ ] Model preserves exactly **200,039** distinct train clients; no null or duplicate `client_id`.
-- [ ] Both arm counts, outcomes, and observed response rates reconcile to source exactly.
-- [ ] Left join does not multiply or lose customers; descriptive anchor consistent.
+- [x] Model preserves exactly **200,039** distinct train clients; no null or duplicate `client_id` (owner-run reconciliations and tests).
+- [x] Both arm counts, outcomes, and observed response rates reconcile to source exactly.
+- [x] Left join does not multiply or lose customers; descriptive anchor consistent.
 - [x] dbt model/YAML and schema/singular tests implemented in GitHub branch.
-- [ ] Model built and dbt tests run in BigQuery US by owner, with execution output.
+- [x] Model built and dbt tests run by owner: **dbt run 1/1 PASS; dbt test 17/17 PASS**.
 - [x] Independent BigQuery reconciliation SQL committed.
-- [ ] Post-build reconciliation executed; results, warnings, and processing costs recorded.
-- [ ] Methodology and limitations reflected in public README/CHANGELOG/DECISIONS without overstated claims.
+- [x] Post-build reconciliation executed: **16/16 TRUE**, no missing/mismatched clients or fields.
+- [ ] Actual bytes processed / cost evidence recorded (not yet supplied).
+- [x] Technical QA evidence and limitations reflected in public README/CHANGELOG/DECISIONS without causal overclaims.
 - [ ] Owner inspects diff and explicitly approves merge.
 - [ ] Local/remote branches synchronized and cleaned after merge.
 
-**Current gate after code publication:** `STRUCTURAL PRECHECK PASS` for the two owner-executed queries; `ANALYTICAL MODEL SQL VERSIONED — BUILD/TEST PENDING`; `EXPERIMENT CAUSAL VALIDITY NOT VERIFIED`.
+**Current gate after owner execution:** `PRECHECK PASS`; `DBT MODEL BUILD 1/1 PASS`; `DBT TEST 17/17 PASS`; `POST-BUILD RECONCILIATION 16/16 TRUE`; `INFERENCE/PR REVIEW PENDING`; `CAUSAL VALIDITY NOT VERIFIED`.
 
 ## 7. Operational sequencing
 
 1. **DONE:** Version contract on `feature/experiment-analysis-mart`, open Draft PR #6 and obtain owner approval.
 2. **DONE:** Implement model, YAML/tests, and standalone source/QA queries in the same Draft PR.
-3. **NEXT:** Execute dbt model/tests and BigQuery reconciliation manually; publish genuine evidence and resource costs.
-5. Carry out descriptive group comparison and, if justified, uncertainty/heterogeneity analysis.
-6. Merge only on owner authorization. Minimal credential-free CI is a **separate PR**; no CD in Session 05.
+3. **DONE:** Owner executed dbt build/test and BigQuery reconciliation; runtime/correctness evidence documented. Processing bytes and cost pending.
+4. **NEXT:** Run reproducible observed-group comparison; assess uncertainty under explicit assumptions and document interpretation.
+5. Review PR diff and merge only on explicit owner authorization. Minimal credential-free CI remains a **separate PR**; no CD in Session 05.
 
 **Related references:** `docs/DECISIONS.md` (DEC-004, DEC-008, DEC-009, DEC-013), `docs/CUSTOMER_BEHAVIOR_SNAPSHOT_CONTRACTS.md`, `sql/qa/07_experiment_balance.sql`, `dbt/models/staging/stg_uplift_train.sql`, `dbt/models/marts/mart_customer_behavior_snapshot.sql`. Private Project Master v1.5 remains outside the public repository.
