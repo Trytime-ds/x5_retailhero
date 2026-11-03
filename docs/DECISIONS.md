@@ -122,4 +122,26 @@ User-executed dbt run 1/1 PASS, dbt test 9/9 PASS; BigQuery QA
 4,534,601 (60d), 6,393,058 (90d), and 36,583,505
 product lines in 90d. No invalid nested-window rows observed.
 This is a descriptive behavioral mart only: causal and treatment-time
-validity gates remain open. PR #5 pending final review and merge.
+validity gates remain open. PR #5 merged on 2026-10-22 as commit `435e96a`.
+
+
+## DEC-014 — Observed experiment response analysis mart (Session 05 design)
+The owner approved the Session 05 contract on 2026-11-02. The proposed
+`mart_experiment_analysis` takes `stg_uplift_train` (200,039 clients)
+as its only labeled experimental universe, with **one row per client**
+and original binary `treatment_flg` and `target`. `stg_uplift_test`
+(200,123 unlabeled, disjoint customers) is excluded. A LEFT JOIN to
+`mart_customer_behavior_snapshot` supplies **descriptive historical
+context only**, never certified pre-treatment features. Rates are
+calculated within each source-defined arm, with group denominators;
+RD and RR are observed contrasts rather than causal estimands.
+On 2026-11-02, owner-executed pre-build BigQuery QA found source
+population = unique clients = 200,039, with 0 invalid arm/outcome
+values. The left join preserved all 100,058 control and 99,981
+treatment clients, 0 unmatched, 0 invalid observed anchors;
+response rates were 60.3280% and 63.6511% (difference +3.3231 pp).
+**This is source and join validation only.** The dbt mart, tests and
+independent post-build reconciliation have been versioned in Draft
+PR #6 but **not yet executed** by the owner. The randomization,
+campaign T0 and outcome-window gates remain NOT VERIFIED; monetary,
+causal and targeting-deployment claims remain out of scope.
