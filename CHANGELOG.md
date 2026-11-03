@@ -2,7 +2,7 @@
 
 ## 2026-11-02 — Session 05 (experiment response mart / Draft PR #6)
 
-### Added (versioned; runtime validation pending)
+### Added and technically validated
 - Owner-approved `docs/EXPERIMENT_ANALYSIS_CONTRACTS.md` for 200,039
   labeled train customers, one row per client.
 - `mart_experiment_analysis`, YAML and singular dbt tests for client/arm/outcome
@@ -18,8 +18,14 @@
   treatment clients on join, with 0 unmatched history clients.
 - Source-defined response rates: control 60.3280%, treatment 63.6511%;
   observed difference +3.3231 percentage points (NOT causal).
-- **No execution evidence yet for the new mart, its tests, or the new
-  post-build SQL**. Draft PR #6 must remain unmerged pending review/QA.
+- **Owner-run model execution:** `dbt run` 1/1 PASS, 15.55 s;
+  `dbt test` 17/17 PASS, 20.77 s; zero WARN/ERROR.
+- **Owner-run post-build reconciliation:** both arms match source counts
+  and response rates exactly, zero missing/mismatched clients and
+  behavior fields, zero invalid historical anchors; **16/16 TRUE**
+  (eight checks per arm). Total unique mart clients: 200,039.
+- Bytes processed / monetary cost not yet supplied. Draft PR #6
+  remains unmerged, pending inferential analysis and owner review.
 - No evidence of randomized assignment, verified SMS T0 or exact outcome
   window; no SMS incremental revenue or uplift claim.
 
