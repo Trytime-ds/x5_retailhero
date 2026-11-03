@@ -64,19 +64,23 @@ The project combines SQL-based analysis, analytics engineering, customer segment
 - Reconciled **36,583,505** product lines in the 90-day window;
   reference date is the **observed** history end (2019-03-18), NOT SMS T0.
 
-**Phase 6 — Observed experiment response analytics: Implementation in progress (Draft PR #6)**
+**Phase 6 — Observed experiment response analytics: Technical QA PASS (Draft PR #6)**
 
 - Documented and owner-approved the experiment analysis contract for the
   200,039 labeled training clients; validated source population and left-join
   cardinality using owner-run BigQuery checks.
 - Versioned `mart_experiment_analysis` SQL, schema and singular dbt tests,
   independent post-build QA, source prechecks, and a descriptive comparison query.
-- **Build, dbt tests and post-build reconciliations are pending owner execution.**
-  No new warehouse or CI PASS is claimed.
+- Owner-run `dbt run` 1/1 PASS (15.55 s), `dbt test` 17/17 PASS
+  (20.77 s), and 16/16 TRUE post-build BigQuery QA flags.
+- Exactly **200,039 distinct train clients** preserved without missing
+  customers, incorrect treatment/outcome values, or descriptive-history mismatches.
+- Inferential analysis, processing-cost evidence and final PR review remain
+  pending. These validations were manual, **not CI**.
 - Source-defined treatment/control comparison is descriptive; randomization,
   SMS T0, actual delivery and outcome window are not independently verified.
 
-**Current focus: executing and validating the experimental analysis mart**, with explicit restrictions on temporal eligibility and causal/economic interpretation.
+**Current focus: observed response inference and review of the validated experiment mart**, with explicit restrictions on temporal eligibility and causal/economic interpretation.
 
 Observed treatment/control covariate balance does **not** establish randomization. The intervention time, assignment mechanism and outcome observation window have not been verified. The observed +3.3231 percentage point conversion difference must **not** be interpreted as proven SMS incrementality.
 
@@ -91,7 +95,7 @@ See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence
 - [x] Intermediate transaction foundation (PR #3 merged)
 - [x] Customer purchase history intermediate foundation (PR #4 merged)
 - [x] Descriptive customer behavior snapshot (PR #5 validated and merged)
-- [ ] Experiment response analysis mart (PR #6 code versioned; execution pending)
+- [x] Experiment response analysis mart technical QA (PR #6 validated; merge pending)
 - [ ] Further intermediate models and trusted analytical marts
 - [ ] Customer behavior analysis and pre-treatment features
 - [ ] Campaign effectiveness and segment-level heterogeneity analysis
