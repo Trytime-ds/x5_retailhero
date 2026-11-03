@@ -75,14 +75,18 @@ The project combines SQL-based analysis, analytics engineering, customer segment
   (20.77 s), and 16/16 TRUE post-build BigQuery QA flags.
 - Exactly **200,039 distinct train clients** preserved without missing
   customers, incorrect treatment/outcome values, or descriptive-history mismatches.
-- Inferential analysis, processing-cost evidence and final PR review remain
-  pending. These validations were manual, **not CI**.
+- Owner-run inferential comparison: observed difference **+3.3231 pp**
+  (95% CI **+2.8979 to +3.7483 pp**), z=15.3093 and two-sided
+  p < 1e-10 under large-sample independent-binomial assumptions.
+  These are **observed differences, not verified causal SMS effects**.
+- Processing-cost evidence and final PR review remain pending. These
+  validations were manual, **not CI**.
 - Source-defined treatment/control comparison is descriptive; randomization,
   SMS T0, actual delivery and outcome window are not independently verified.
 
-**Current focus: observed response inference and review of the validated experiment mart**, with explicit restrictions on temporal eligibility and causal/economic interpretation.
+**Current focus: review and integration of the validated descriptive experiment mart**, with explicit restrictions on temporal eligibility and causal/economic interpretation.
 
-Observed treatment/control covariate balance does **not** establish randomization. The intervention time, assignment mechanism and outcome observation window have not been verified. The observed +3.3231 percentage point conversion difference must **not** be interpreted as proven SMS incrementality.
+Observed treatment/control covariate balance does **not** establish randomization. The intervention time, assignment mechanism and outcome observation window have not been verified. The observed +3.3231 percentage point source-defined binary response difference must **not** be interpreted as proven SMS incrementality.
 
 See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence](docs/STAGING_CONTRACTS.md), [transaction contracts and QA](docs/INTERMEDIATE_CONTRACTS.md), [customer history contract and QA](docs/CUSTOMER_PURCHASE_HISTORY_CONTRACTS.md), [behavior snapshot contract and QA](docs/CUSTOMER_BEHAVIOR_SNAPSHOT_CONTRACTS.md), [experiment contract and QA plan](docs/EXPERIMENT_ANALYSIS_CONTRACTS.md), [dbt execution instructions](dbt/README.md), and [milestones](CHANGELOG.md).
 
