@@ -1,6 +1,6 @@
 # Experiment Analysis — Contract & Gates (Session 05)
 
-**Status:** CONTRACT APPROVED / mart built and technical QA **PASS** (owner-executed 2026-11-02) / inferential analysis and owner PR review **PENDING** / causal gate **NOT VERIFIED**.  
+**Status:** CONTRACT APPROVED / technical QA **PASS** / descriptive response inference **PASS under stated assumptions** (owner-executed 2026-11-02) / owner PR review **PENDING** / causal gate **NOT VERIFIED**.  
 **Documented:** 2026-11-02.  
 **Repository branch:** `feature/experiment-analysis-mart`.  
 **Scope:** observed treatment/control response, descriptive behavioral context, and auditability.  
@@ -113,7 +113,7 @@ Expected anchor in current history: `2019-03-18` (observed history end; NOT camp
 
 The two pre-build checks are now versioned in `sql/qa/13_experiment_population_join_precheck.sql` and the post-build independent reconciliation in `sql/qa/12_experiment_analysis_reconciliation.sql`. The historical outputs above were owner-executed before those files were versioned; **their later presence in Git does not constitute re-execution**.
 
-## 5. Statistical analysis protocol (planned, not executed)
+## 5. Statistical analysis protocol (aggregate comparison completed)
 
 ### Post-build technical execution evidence — owner-reported (2026-11-02)
 
@@ -122,7 +122,7 @@ The two pre-build checks are now versioned in `sql/qa/13_experiment_population_j
 - `sql/qa/12_experiment_analysis_reconciliation.sql`: **2 arm rows returned**. Both arms matched source counts, source-positive and negative outcomes, source-to-mart rates, and historical context.
 - Per-arm QA: `missing_clients = 0`, `experiment_field_mismatches = 0`, `behavior_unmatched = 0`, `behavior_field_mismatches = 0`, `invalid_observed_anchor = 0`.
 - All **eight** `*_pass` flags **TRUE** on both arms (**16 TRUE results**). Distinct clients in the mart = **200,039**.
-- **Not measured/reported yet:** warehouse bytes processed and charges; these must not be fabricated. `dbt debug` output, CI execution, and inferential uncertainty analysis have not been independently evidenced.
+- **Not measured/reported yet:** warehouse bytes processed and charges; these must not be fabricated. `dbt debug` output and CI execution have not been independently evidenced. Inferential outputs are now owner-reported below.
 
 These PASS results validate model integrity under the specified checks, **not** SMS incrementality, intervention timing, randomization, or causal identification.
 
@@ -136,7 +136,7 @@ These PASS results validate model integrity under the specified checks, **not** 
 
 No financial impact estimation from `purchase_sum` or source product quantities without separate business-semantic validation.
 
-### Reproducible inference query (versioned, NOT yet executed by owner)
+### Reproducible inference query (versioned and owner-executed, 2026-11-02)
 
 `sql/analysis/03_experiment_response_inference.sql` calculates:
 
@@ -148,7 +148,7 @@ No financial impact estimation from `purchase_sum` or source product quantities 
 
 The analysis assumes independent binary observations, group comparability, and large-sample approximations. Those inferential assumptions are **conditional**; they do not validate an unknown assignment mechanism or campaign chronology.
 
-**Independent arithmetic reference from verified arm counts, NOT a BigQuery query result:**
+**Independent arithmetic reference from verified arm counts, reproduced exactly in owner-executed BigQuery SQL:**
 
 | Metric | Approximate expected value |
 |---|---:|
@@ -159,7 +159,9 @@ The analysis assumes independent binary observations, group comparability, and l
 | Pooled z statistic (two-sided) | +15.3093 |
 | Two-sided p-value implication | p < 1e-10 (approximate external calculation: ~6.6e-53) |
 
-These are **confidence intervals under the independent-binomial model**, not 95% causal-effect intervals. The user must execute the versioned BigQuery query and compare the output before marking this gate PASS.
+**Owner-reported BigQuery outputs (2026-11-02):** source counts reproduced exactly (control n=100,058; positive=60,363; treatment n=99,981; positive=63,639). All output values matched the independent reference after rounding to display precision: control rate 60.3280% (95% CI [60.0249%, 60.6311%]); treatment rate 63.6511% (95% CI [63.3529%, 63.9492%]); RD +3.3231 pp (95% CI [+2.8979, +3.7483] pp); RR 1.055084 (95% CI [1.047861, 1.062356]); pooled z=15.3093. `reject_equal_rates_at_alpha_005=true`, `two_sided_p_below_1e_minus_10=true`, `baseline_counts_match=true`.
+
+**Inferential QA: PASS** for the aggregate descriptive contrast, conditional on the independent-binomial model and large-sample assumptions. The query reports a bound **p < 1e-10**, not an exact p-value. These are **not causal-effect confidence intervals**, and statistical significance does not establish randomized assignment, SMS exposure, correct temporal eligibility, or incremental SMS impact.
 
 ## 6. Implementation/QA acceptance gate
 
@@ -175,11 +177,12 @@ Before merge, the owner must review this contract and approve the proposed custo
 - [x] Independent BigQuery reconciliation SQL committed.
 - [x] Post-build reconciliation executed: **16/16 TRUE**, no missing/mismatched clients or fields.
 - [ ] Actual bytes processed / cost evidence recorded (not yet supplied).
-- [x] Technical QA evidence and limitations reflected in public README/CHANGELOG/DECISIONS without causal overclaims.
+- [x] Technical and inferential QA evidence and limitations reflected in public README/CHANGELOG/DECISIONS without causal overclaims.
+- [x] Aggregated response, 95% rate/RD/RR intervals, and two-sided z-test reproduced in owner-executed BigQuery query.
 - [ ] Owner inspects diff and explicitly approves merge.
 - [ ] Local/remote branches synchronized and cleaned after merge.
 
-**Current gate after owner execution:** `PRECHECK PASS`; `DBT MODEL BUILD 1/1 PASS`; `DBT TEST 17/17 PASS`; `POST-BUILD RECONCILIATION 16/16 TRUE`; `INFERENCE QUERY VERSIONED — EXECUTION/PR REVIEW PENDING`; `CAUSAL VALIDITY NOT VERIFIED`.
+**Current gate after owner execution:** `PRECHECK PASS`; `DBT MODEL BUILD 1/1 PASS`; `DBT TEST 17/17 PASS`; `POST-BUILD RECONCILIATION 16/16 TRUE`; `DESCRIPTIVE INFERENCE PASS (CONDITIONAL)`; `PR REVIEW PENDING`; `CAUSAL VALIDITY NOT VERIFIED`.
 
 ## 7. Operational sequencing
 
@@ -187,7 +190,7 @@ Before merge, the owner must review this contract and approve the proposed custo
 2. **DONE:** Implement model, YAML/tests, and standalone source/QA queries in the same Draft PR.
 3. **DONE:** Owner executed dbt build/test and BigQuery reconciliation; runtime/correctness evidence documented. Processing bytes and cost pending.
 4. **DONE:** Reproduced the observed-group response rates and ratios from the built model (owner-executed).
-5. **NEXT:** Execute the versioned inferential query and compare it with the independent numerical reference; record caveats and actual results.
+5. **DONE:** Owner executed inferential query; all returned values agree with independent numerical reference. Interpreted as observational comparisons, not causal impact.
 6. Review PR diff and merge only on explicit owner authorization. Minimal credential-free CI remains a **separate PR**; no CD in Session 05.
 
 **Related references:** `docs/DECISIONS.md` (DEC-004, DEC-008, DEC-009, DEC-013), `docs/CUSTOMER_BEHAVIOR_SNAPSHOT_CONTRACTS.md`, `sql/qa/07_experiment_balance.sql`, `dbt/models/staging/stg_uplift_train.sql`, `dbt/models/marts/mart_customer_behavior_snapshot.sql`. Private Project Master v1.5 remains outside the public repository.
