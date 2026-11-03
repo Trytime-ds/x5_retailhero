@@ -12,7 +12,7 @@
   owner-executed checks now versioned), and
   `sql/analysis/02_experiment_observed_response.sql` (owner-executed),
   and `sql/analysis/03_experiment_response_inference.sql` for 95% CIs
-  and a two-sided z-test (**versioned; BigQuery execution pending**).
+  and a two-sided z-test (**owner-executed; reconciled to independent reference**).
 
 ### Evidence and boundaries
 - Owner-executed **pre-build** BigQuery checks: 200,039 distinct train IDs;
@@ -26,8 +26,15 @@
   and response rates exactly, zero missing/mismatched clients and
   behavior fields, zero invalid historical anchors; **16/16 TRUE**
   (eight checks per arm). Total unique mart clients: 200,039.
+- **Owner-run inferential SQL:** difference +3.3231 pp, 95% CI
+  [+2.8979, +3.7483] pp; RR 1.055084, 95% CI
+  [1.047861, 1.062356]; pooled z=15.3093, two-sided p < 1e-10.
+  All three inferential boolean checks TRUE; owner-reported BigQuery
+  values match independent arithmetic reference.
+- These intervals and p-value are conditional on approximate
+  independent-binomial inference, **not an identified causal SMS effect**.
 - Bytes processed / monetary cost not yet supplied. Draft PR #6
-  remains unmerged, pending inferential analysis and owner review.
+  remains unmerged, pending owner review.
 - No evidence of randomized assignment, verified SMS T0 or exact outcome
   window; no SMS incremental revenue or uplift claim.
 
