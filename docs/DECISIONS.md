@@ -126,7 +126,7 @@ validity gates remain open. PR #5 merged on 2026-10-22 as commit `435e96a`.
 
 
 ## DEC-014 — Observed experiment response analysis mart (Session 05 design)
-The owner approved the Session 05 contract on 2026-11-02. The proposed
+The owner approved the Session 05 contract on 2026-11-02. The owner-approved
 `mart_experiment_analysis` takes `stg_uplift_train` (200,039 clients)
 as its only labeled experimental universe, with **one row per client**
 and original binary `treatment_flg` and `target`. `stg_uplift_test`
@@ -140,8 +140,15 @@ population = unique clients = 200,039, with 0 invalid arm/outcome
 values. The left join preserved all 100,058 control and 99,981
 treatment clients, 0 unmatched, 0 invalid observed anchors;
 response rates were 60.3280% and 63.6511% (difference +3.3231 pp).
-**This is source and join validation only.** The dbt mart, tests and
-independent post-build reconciliation have been versioned in Draft
-PR #6 but **not yet executed** by the owner. The randomization,
-campaign T0 and outcome-window gates remain NOT VERIFIED; monetary,
-causal and targeting-deployment claims remain out of scope.
+Post-build owner-reported evidence (2026-11-02): dbt model run **1/1 PASS**
+in 15.55 s; tests **17/17 PASS** in 20.77 s, with 0 warnings/errors.
+Independent BigQuery reconciliation reproduced both groups and all
+source outcomes (control: 100,058/60,363; treatment: 99,981/63,639),
+with 0 missing clients, 0 experimental/behavioral field mismatches,
+0 missing behavior matches, 0 invalid historical anchors, and
+**16/16 TRUE** flags across two arms. This validates structural/semantic
+parity within the modeled fields; it does NOT prove experiment
+randomization, outcome timing, or SMS causality. Resource bytes/charges
+and inferential confidence analysis remain pending, as does owner review
+and merge of Draft PR #6. Monetary, causal and targeting-deployment
+claims remain out of scope.
