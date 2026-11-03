@@ -148,7 +148,13 @@ with 0 missing clients, 0 experimental/behavioral field mismatches,
 0 missing behavior matches, 0 invalid historical anchors, and
 **16/16 TRUE** flags across two arms. This validates structural/semantic
 parity within the modeled fields; it does NOT prove experiment
-randomization, outcome timing, or SMS causality. Resource bytes/charges
-and inferential confidence analysis remain pending, as does owner review
-and merge of Draft PR #6. Monetary, causal and targeting-deployment
+randomization, outcome timing, or SMS causality. Owner-reported inferential BigQuery SQL (2026-11-02) independently
+reproduced: observed RD +3.3231 percentage points with approximate 95%
+CI [+2.8979, +3.7483] pp; observed RR 1.055084 with approximate 95%
+CI [1.047861, 1.062356]; pooled two-sided z=15.3093 and
+p < 1e-10. All three inferential boolean checks passed.
+These statistics depend on independent-binomial and large-sample
+assumptions; small p-values and confidence intervals do NOT establish
+causal SMS incrementality. Resource bytes/charges remain unreported,
+and owner review and merge of Draft PR #6 remain pending. Monetary, causal and targeting-deployment
 claims remain out of scope.
