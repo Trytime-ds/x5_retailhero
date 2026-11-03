@@ -136,6 +136,31 @@ These PASS results validate model integrity under the specified checks, **not** 
 
 No financial impact estimation from `purchase_sum` or source product quantities without separate business-semantic validation.
 
+### Reproducible inference query (versioned, NOT yet executed by owner)
+
+`sql/analysis/03_experiment_response_inference.sql` calculates:
+
+- Normal-approximation (Wald) 95% CI for each observed binary response rate, using each arm's binomial standard error.
+- Unpooled Wald 95% CI for the **observed** treatment-minus-control difference (percentage points).
+- Log-normal (Katz) 95% CI for the **observed** risk ratio; this requires nonzero positive outcomes in both arms.
+- Two-sided pooled-variance z-statistic for H0: population response proportions are equal; compares to critical z = ±1.959964 for alpha = 0.05.
+- A conservative binary significance marker indicating **two-sided p < 1e-10** if |z| > 6.466951; BigQuery SQL does not claim an exact p-value from unavailable built-in normal-tail functions.
+
+The analysis assumes independent binary observations, group comparability, and large-sample approximations. Those inferential assumptions are **conditional**; they do not validate an unknown assignment mechanism or campaign chronology.
+
+**Independent arithmetic reference from verified arm counts, NOT a BigQuery query result:**
+
+| Metric | Approximate expected value |
+|---|---:|
+| Control response-rate 95% CI | 60.0249% to 60.6311% |
+| Treatment response-rate 95% CI | 63.3529% to 63.9492% |
+| Observed difference 95% CI | **+2.8979 to +3.7483 percentage points** |
+| Observed RR 95% CI | 1.047861 to 1.062356 |
+| Pooled z statistic (two-sided) | +15.3093 |
+| Two-sided p-value implication | p < 1e-10 (approximate external calculation: ~6.6e-53) |
+
+These are **confidence intervals under the independent-binomial model**, not 95% causal-effect intervals. The user must execute the versioned BigQuery query and compare the output before marking this gate PASS.
+
 ## 6. Implementation/QA acceptance gate
 
 Before merge, the owner must review this contract and approve the proposed customer-level model.
@@ -154,14 +179,15 @@ Before merge, the owner must review this contract and approve the proposed custo
 - [ ] Owner inspects diff and explicitly approves merge.
 - [ ] Local/remote branches synchronized and cleaned after merge.
 
-**Current gate after owner execution:** `PRECHECK PASS`; `DBT MODEL BUILD 1/1 PASS`; `DBT TEST 17/17 PASS`; `POST-BUILD RECONCILIATION 16/16 TRUE`; `INFERENCE/PR REVIEW PENDING`; `CAUSAL VALIDITY NOT VERIFIED`.
+**Current gate after owner execution:** `PRECHECK PASS`; `DBT MODEL BUILD 1/1 PASS`; `DBT TEST 17/17 PASS`; `POST-BUILD RECONCILIATION 16/16 TRUE`; `INFERENCE QUERY VERSIONED — EXECUTION/PR REVIEW PENDING`; `CAUSAL VALIDITY NOT VERIFIED`.
 
 ## 7. Operational sequencing
 
 1. **DONE:** Version contract on `feature/experiment-analysis-mart`, open Draft PR #6 and obtain owner approval.
 2. **DONE:** Implement model, YAML/tests, and standalone source/QA queries in the same Draft PR.
 3. **DONE:** Owner executed dbt build/test and BigQuery reconciliation; runtime/correctness evidence documented. Processing bytes and cost pending.
-4. **NEXT:** Run reproducible observed-group comparison; assess uncertainty under explicit assumptions and document interpretation.
-5. Review PR diff and merge only on explicit owner authorization. Minimal credential-free CI remains a **separate PR**; no CD in Session 05.
+4. **DONE:** Reproduced the observed-group response rates and ratios from the built model (owner-executed).
+5. **NEXT:** Execute the versioned inferential query and compare it with the independent numerical reference; record caveats and actual results.
+6. Review PR diff and merge only on explicit owner authorization. Minimal credential-free CI remains a **separate PR**; no CD in Session 05.
 
 **Related references:** `docs/DECISIONS.md` (DEC-004, DEC-008, DEC-009, DEC-013), `docs/CUSTOMER_BEHAVIOR_SNAPSHOT_CONTRACTS.md`, `sql/qa/07_experiment_balance.sql`, `dbt/models/staging/stg_uplift_train.sql`, `dbt/models/marts/mart_customer_behavior_snapshot.sql`. Private Project Master v1.5 remains outside the public repository.
