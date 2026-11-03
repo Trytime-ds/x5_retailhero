@@ -1,6 +1,6 @@
 # Experiment Analysis — Contract & Gates (Session 05)
 
-**Status:** CONTRACT PROPOSED / structural QA **PASS**; methodological and causal gate **NOT VERIFIED**.  
+**Status:** CONTRACT APPROVED by owner (2026-11-02) / pre-build structural QA **PASS** / mart implemented in repository, **execution pending** / causal gate **NOT VERIFIED**.  
 **Documented:** 2026-11-02.  
 **Repository branch:** `feature/experiment-analysis-mart`.  
 **Scope:** observed treatment/control response, descriptive behavioral context, and auditability.  
@@ -34,9 +34,9 @@ The purchase history ends on **2019-03-18**. This is an **observed historical cu
 
 Do not join `stg_uplift_test` into a labeled experimental model, impute absent outcomes, or add treatment/target to the test set.
 
-### Candidate model: `mart_experiment_analysis`
+### Approved model: `mart_experiment_analysis`
 
-**Proposed, not yet approved or implemented:** BigQuery table, one row per train client, preserving `client_id`, `treatment_flg`, `target`; optional left-joined descriptive historical columns listed below.
+**Owner-approved 2026-11-02 and implemented in versioned SQL (not yet run):** BigQuery table, one row per train client, preserving `client_id`, `treatment_flg`, `target`; left-joined descriptive historical columns listed below. Execution evidence remains pending.
 
 The model is a **customer-level audited analysis base**. Response rates and other group aggregates belong in reproducible SQL analysis/QA, not as repeated arm-level fields on each customer row.
 
@@ -111,7 +111,7 @@ Expected anchor in current history: `2019-03-18` (observed history end; NOT camp
 - **Result:** Cardinality, match coverage, and source outcome preservation **PASS** for tested queries.
 - **Not implied:** verification of each candidate behavioral field, pre-treatment status, causal exchangeability, or complete semantic suitability.
 
-The exact BigQuery query text should be versioned in `sql/qa/` before the implementation PR is ready for merge; this contract records the returned evidence but does not falsely claim that these QA queries are already tracked.
+The two pre-build checks are now versioned in `sql/qa/13_experiment_population_join_precheck.sql` and the post-build independent reconciliation in `sql/qa/12_experiment_analysis_reconciliation.sql`. The historical outputs above were owner-executed before those files were versioned; **their later presence in Git does not constitute re-execution**.
 
 ## 5. Statistical analysis protocol (planned, not executed)
 
@@ -129,25 +129,26 @@ No financial impact estimation from `purchase_sum` or source product quantities 
 
 Before merge, the owner must review this contract and approve the proposed customer-level model.
 
-- [ ] Contract and allowed descriptive use approved by owner.
-- [ ] Draft PR opened; implementation remains within that PR and branch.
+- [x] Contract and descriptive-only model scope approved by owner in conversation, 2026-11-02.
+- [x] Draft PR #6 opened; implementation remains within that PR and branch.
 - [ ] Model preserves exactly **200,039** distinct train clients; no null or duplicate `client_id`.
 - [ ] Both arm counts, outcomes, and observed response rates reconcile to source exactly.
 - [ ] Left join does not multiply or lose customers; descriptive anchor consistent.
-- [ ] dbt model/YAML and appropriate schema/singular tests implemented and run in BigQuery US by owner.
-- [ ] Independent BigQuery reconciliation SQL committed and executed; results, warnings, and processing costs recorded.
+- [x] dbt model/YAML and schema/singular tests implemented in GitHub branch.
+- [ ] Model built and dbt tests run in BigQuery US by owner, with execution output.
+- [x] Independent BigQuery reconciliation SQL committed.
+- [ ] Post-build reconciliation executed; results, warnings, and processing costs recorded.
 - [ ] Methodology and limitations reflected in public README/CHANGELOG/DECISIONS without overstated claims.
 - [ ] Owner inspects diff and explicitly approves merge.
 - [ ] Local/remote branches synchronized and cleaned after merge.
 
-**Gate at document creation:** `STRUCTURAL PASS` for the two user-executed queries; `ANALYTICAL MODEL NOT YET BUILT`; `EXPERIMENT CAUSAL VALIDITY NOT VERIFIED`.
+**Current gate after code publication:** `STRUCTURAL PRECHECK PASS` for the two owner-executed queries; `ANALYTICAL MODEL SQL VERSIONED — BUILD/TEST PENDING`; `EXPERIMENT CAUSAL VALIDITY NOT VERIFIED`.
 
 ## 7. Operational sequencing
 
-1. Version this contract on `feature/experiment-analysis-mart` and open a **Draft PR** before SQL implementation.
-2. Review the contract, especially behavior-field eligibility and planned inferential methods.
-3. Implement model, YAML/tests, and version the standalone QA queries.
-4. Run dbt and BigQuery validations manually; publish genuine evidence and resource costs.
+1. **DONE:** Version contract on `feature/experiment-analysis-mart`, open Draft PR #6 and obtain owner approval.
+2. **DONE:** Implement model, YAML/tests, and standalone source/QA queries in the same Draft PR.
+3. **NEXT:** Execute dbt model/tests and BigQuery reconciliation manually; publish genuine evidence and resource costs.
 5. Carry out descriptive group comparison and, if justified, uncertainty/heterogeneity analysis.
 6. Merge only on owner authorization. Minimal credential-free CI is a **separate PR**; no CD in Session 05.
 
