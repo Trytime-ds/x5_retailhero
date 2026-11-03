@@ -10,7 +10,9 @@
 - `sql/qa/12_experiment_analysis_reconciliation.sql` (post-build),
   `sql/qa/13_experiment_population_join_precheck.sql` (previously
   owner-executed checks now versioned), and
-  `sql/analysis/02_experiment_observed_response.sql`.
+  `sql/analysis/02_experiment_observed_response.sql` (owner-executed),
+  and `sql/analysis/03_experiment_response_inference.sql` for 95% CIs
+  and a two-sided z-test (**versioned; BigQuery execution pending**).
 
 ### Evidence and boundaries
 - Owner-executed **pre-build** BigQuery checks: 200,039 distinct train IDs;
