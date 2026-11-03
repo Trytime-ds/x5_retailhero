@@ -54,7 +54,7 @@ The project combines SQL-based analysis, analytics engineering, customer segment
   handling remains a defensive contract for future updates.
 - `2019-03-18` is the observed history end, **not** confirmed campaign T0.
 
-**Phase 5 — Descriptive customer behavior snapshot mart: QA gate PASS (PR #5 pending review/merge)**
+**Phase 5 — Descriptive customer behavior snapshot mart: QA gate PASS (PR #5 merged)**
 
 - Created `mart_customer_behavior_snapshot` with one row per client and
   inclusive 30/60/90-day historical ticket windows.
@@ -64,11 +64,23 @@ The project combines SQL-based analysis, analytics engineering, customer segment
 - Reconciled **36,583,505** product lines in the 90-day window;
   reference date is the **observed** history end (2019-03-18), NOT SMS T0.
 
-**Current focus: validating historical customer behavior and evaluating analytics/experiment design**, with careful restrictions on temporal eligibility and economic interpretation.
+**Phase 6 — Observed experiment response analytics: Implementation in progress (Draft PR #6)**
+
+- Documented and owner-approved the experiment analysis contract for the
+  200,039 labeled training clients; validated source population and left-join
+  cardinality using owner-run BigQuery checks.
+- Versioned `mart_experiment_analysis` SQL, schema and singular dbt tests,
+  independent post-build QA, source prechecks, and a descriptive comparison query.
+- **Build, dbt tests and post-build reconciliations are pending owner execution.**
+  No new warehouse or CI PASS is claimed.
+- Source-defined treatment/control comparison is descriptive; randomization,
+  SMS T0, actual delivery and outcome window are not independently verified.
+
+**Current focus: executing and validating the experimental analysis mart**, with explicit restrictions on temporal eligibility and causal/economic interpretation.
 
 Observed treatment/control covariate balance does **not** establish randomization. The intervention time, assignment mechanism and outcome observation window have not been verified. The observed +3.3231 percentage point conversion difference must **not** be interpreted as proven SMS incrementality.
 
-See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence](docs/STAGING_CONTRACTS.md), [transaction contracts and QA](docs/INTERMEDIATE_CONTRACTS.md), [customer history contract and QA](docs/CUSTOMER_PURCHASE_HISTORY_CONTRACTS.md), [behavior snapshot contract and QA](docs/CUSTOMER_BEHAVIOR_SNAPSHOT_CONTRACTS.md), [dbt execution instructions](dbt/README.md), and [milestones](CHANGELOG.md).
+See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence](docs/STAGING_CONTRACTS.md), [transaction contracts and QA](docs/INTERMEDIATE_CONTRACTS.md), [customer history contract and QA](docs/CUSTOMER_PURCHASE_HISTORY_CONTRACTS.md), [behavior snapshot contract and QA](docs/CUSTOMER_BEHAVIOR_SNAPSHOT_CONTRACTS.md), [experiment contract and QA plan](docs/EXPERIMENT_ANALYSIS_CONTRACTS.md), [dbt execution instructions](dbt/README.md), and [milestones](CHANGELOG.md).
 
 ## Roadmap
 
@@ -78,7 +90,8 @@ See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence
 - [ ] Broader Data Quality / temporal and experiment validity gates
 - [x] Intermediate transaction foundation (PR #3 merged)
 - [x] Customer purchase history intermediate foundation (PR #4 merged)
-- [x] Descriptive customer behavior snapshot (PR #5 validated; merge pending)
+- [x] Descriptive customer behavior snapshot (PR #5 validated and merged)
+- [ ] Experiment response analysis mart (PR #6 code versioned; execution pending)
 - [ ] Further intermediate models and trusted analytical marts
 - [ ] Customer behavior analysis and pre-treatment features
 - [ ] Campaign effectiveness and segment-level heterogeneity analysis
