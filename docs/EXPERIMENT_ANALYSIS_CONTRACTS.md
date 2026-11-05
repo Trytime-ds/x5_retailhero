@@ -1,5 +1,14 @@
 # Experiment Analysis — Contract & Gates (Session 05)
 
+> **Repository status correction (2026-11-05):** PR #6 was squash-merged
+> into `main` on 2026-11-02 (Chile time), commit `6210d9c`.
+> Any references in this Session 05 historical contract to pending
+> owner PR review, an unmerged Draft, or a not-yet-executed model
+> describe the state **before** execution/merge. The actual
+> owner-executed model and inference PASS evidence is recorded below.
+> This status correction does not modify the experimental limitations.
+
+
 **Status:** CONTRACT APPROVED / technical QA **PASS** / descriptive response inference **PASS under stated assumptions** (owner-executed 2026-11-02) / owner PR review **PENDING** / causal gate **NOT VERIFIED**.  
 **Documented:** 2026-11-02.  
 **Repository branch:** `feature/experiment-analysis-mart`.  
