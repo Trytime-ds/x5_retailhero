@@ -70,6 +70,25 @@ Once boundaries are frozen, calculate by dimension × segment × arm:
 - Do not interpret numerical rates for `n=0`; use NULL and explicit status.
 - Unexpected treatment/target values, duplicated client IDs, missing source rows or misclassified boundaries are QA failures.
 
+### Gate B executed evidence — owner-reported 2026-11-05
+
+Owner executed `sql/analysis/05_segment_observed_response.sql` on frozen bins and supplied both result sets. Both dimensions returned `PASS_RECONCILED`; **6/6 segments `PASS_SUPPORT`**. These are **observed**, not causal, response differences. The assistant independently recomputed rates and contrasts from the supplied integer arm counts; no direct warehouse or CI execution was performed.
+
+| Dimension | Segment | Control n / positive | Treatment n / positive | Control rate | Treatment rate | Observed RD (pp) | RR |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Frequency | Low | 35,096 / 12,559 | 34,848 / 14,066 | 35.7847% | 40.3639% | +4.5792 | 1.127964 |
+| Frequency | Medium | 34,281 / 21,601 | 34,036 / 22,553 | 63.0116% | 66.2622% | +3.2506 | 1.051588 |
+| Frequency | High | 30,681 / 26,203 | 31,097 / 27,020 | 85.4046% | 86.8894% | +1.4848 | 1.017385 |
+| Recency | Recent | 38,041 / 29,751 | 38,024 / 30,709 | 78.2077% | 80.7622% | +2.5544 | 1.032662 |
+| Recency | Intermediate | 29,624 / 17,708 | 29,580 / 18,720 | 59.7759% | 63.2860% | +3.5101 | 1.058722 |
+| Recency | Less recent | 32,393 / 12,904 | 32,377 / 14,210 | 39.8358% | 43.8892% | +4.0534 | 1.101753 |
+
+For **each dimension separately**, reconciling by arm yields 100,058 control and 99,981 treatment clients; positives 60,363 / 63,639; negatives 39,695 / 36,342; total 200,039. Zero invalid or stop rows, zero membership mismatches, zero missing recency, zero segments below support. Source baseline was checked against `stg_uplift_train` within the query. **Gate B: PASS**.
+
+**Critical statistical distinction:** every segment exhibits a positive observed treatment–control RD, but the existence of a within-segment difference does not itself prove *heterogeneity*. The follow-on prespecified comparison is the **difference in RDs** against the same-dimension reference. This is still noncausal, conditional on independent-binomial model assumptions, and exploratory.
+
+**Next Gate C (NOT EXECUTED):** `sql/analysis/06_segment_response_inference.sql` computes RD/RR intervals, within-segment proportion tests (family A), between-segment difference-in-RDs tests (family B) and BH-FDR q-values. BigQuery does not have a native normal-tail CDF; the SQL uses an explicitly named normal-tail approximation and must be checked against independent arithmetic. Do not assert these inferential SQL results until owner execution.
+
 ## 5. Contrasts, uncertainty, and multiplicity
 
 For each eligible segment:
@@ -94,9 +113,9 @@ Before narrating results, check:
 
 1. **Owner-approved and frozen 2026-11-05:** descriptive frequency and recency dimensions, pooled exact-discrete-tertile rules and numeric thresholds; no target used to select thresholds.
 2. **Completed Gate A:** owner executed `sql/analysis/04_segment_distribution_precheck.sql`, supplied two result sets, both dimensions PASS; cutoff values and membership counts documented above.
-3. Next execute `sql/analysis/05_segment_observed_response.sql` to verify per-arm support, segmented source reconciliation and observed response contrasts (Gate B). Run inferential/interaction SQL and multiplicity checks **only after** Gate B is reviewed.
+3. **Completed Gate B:** owner executed `sql/analysis/05_segment_observed_response.sql`, with six `PASS_SUPPORT` statuses and both dimensions `PASS_RECONCILED`; exact arm counts/rates recorded above. **Next:** execute `sql/analysis/06_segment_response_inference.sql` (Gate C) and compare inferential outputs with independent arithmetic.
 4. Update README/CHANGELOG/DECISIONS. Note: current README still calls PR #6 Draft even though GitHub confirms it merged; correct this in a separate commit in the same Session 06 feature PR.
 5. Evidence of tests/queries **only after the owner has actually run them**; report bytes/costs if measured, never infer actual charges.
 6. Review the feature diff; obtain explicit owner approval before squash merge into `main`. Keep the Project Master private. CI/CD is out of scope for this PR.
 
-**Current gate status:** Contract APPROVED; empirical cutoffs FROZEN / Gate A PASS (owner-executed); arm-level support/response SQL Gate B NOT RUN; temporal eligibility NOT VERIFIED; causal identification NOT VERIFIED. Versioned SQL alone does not prove execution.
+**Current gate status:** Contract APPROVED, cutoffs FROZEN, Gate A PASS, Gate B PASS (both owner-executed); Gate C inference/FDR SQL NOT RUN; temporal eligibility NOT VERIFIED; causal identification NOT VERIFIED. Versioned SQL alone does not prove execution.
