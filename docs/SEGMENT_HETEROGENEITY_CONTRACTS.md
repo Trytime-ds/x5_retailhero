@@ -1,6 +1,6 @@
 # Session 06 — Descriptive Response Heterogeneity Contract
 
-**Status:** Segmentation design APPROVED by owner on 2026-11-05; empirical cutoffs NOT YET FROZEN. No Session 06 distribution or outcome queries have been executed.
+**Status:** Design APPROVED and empirical cutoffs FROZEN from owner-executed BigQuery Gate A on 2026-11-05. Gate A distribution PASS (both dimensions); no Session 06 response or inference queries have been executed.
 **Scope:** Outcome-blind segment design first; descriptive treatment/control response comparisons second.
 **Base:** `mart_experiment_analysis` in BigQuery `x5_dbt_dev`; one row per 200,039 distinct `stg_uplift_train` clients.
 **History anchor:** 2019-03-18, observed purchase-history end. **NOT** independently verified SMS T0.
@@ -34,7 +34,31 @@ For **each dimension separately**, derive exact empirical 33rd and 67th percenti
 
 ### Pre-outcome gate A (required)
 
-Create and execute a **distribution-only** BigQuery query showing for each dimension: min/p33/median/p67/max, missing count, number of distinct values, zero count, cutoff-tie frequencies, and final segment counts **without any treatment or outcome columns**. Check exactly 200,039 assigned clients per dimension, no duplication and no loss. Owner must review/freeze cutoff values *before* the segment response query is written/executed.
+Create and execute a **distribution-only** BigQuery query showing for each dimension: min/p33/median/p67/max, missing count, number of distinct values, zero count, cutoff-tie frequencies, and final segment counts **without any treatment or outcome columns**. Check exactly 200,039 assigned clients per dimension, no duplication and no loss. Owner must review/freeze cutoff values *before* the segment response query is written/executed. **Completed 2026-11-05: cutoffs frozen from the reported Gate A results below.**
+
+### Gate A execution evidence — owner-reported 2026-11-05
+
+Executed `sql/analysis/04_segment_distribution_precheck.sql` in BigQuery; owner supplied both result sets. **No direct warehouse execution by assistant or GitHub Actions.** Both dimensions returned `PASS_READY_FOR_CUTOFF_REVIEW`; the subsequent review found no collapsed percentiles, missing feature values, negative feature values, duplicates or lost clients.
+
+| Dimension | Rows / unique clients | Missing / negative | Zero | Distinct values | Range | p33 / median / p67 | Ties at p33 / p67 |
+|---|---:|---:|---:|---:|---:|---|---:|
+| `frequency_90d` | 200,039 / 200,039 | 0 / 0 | 0 | 171 | 1–282 | **8 / 12 / 18** | 9,387 / 4,979 |
+| `recency_days` | 200,039 / 200,039 | 0 / 0 | 35,273 | 23 | 0–22 | **2 / 4 / 7** | 18,614 / 10,699 |
+
+**Frozen bins (do not tune on outcomes):**
+
+| Dimension | Segment | Rule | Owner-observed clients | Share |
+|---|---|---|---:|---:|
+| `frequency_90d` | Low | 1–8 tickets (`x <= 8`) | 69,944 | 34.97% |
+| `frequency_90d` | Medium | 9–18 tickets (`8 < x <= 18`) | 68,317 | 34.15% |
+| `frequency_90d` | High | 19+ tickets (`x > 18`; observed max 282) | 61,778 | 30.88% |
+| `recency_days` | Recent | 0–2 days (`x <= 2`) | 76,065 | 38.03% |
+| `recency_days` | Intermediate | 3–7 days (`2 < x <= 7`) | 59,204 | 29.60% |
+| `recency_days` | Less recent | 8+ days (`x > 7`; observed max 22) | 64,770 | 32.38% |
+
+**Reconciliation:** frequency 69,944 + 68,317 + 61,778 = **200,039**; recency 76,065 + 59,204 + 64,770 = **200,039**. Rounded shares may not sum exactly to 100%. The large recency-zero concentration (35,273, ~17.63% of train) and boundary ties are documented. Bins are comparable descriptively, not guaranteed equal size or pre-SMS. The frozen rules require versioned data-change review before application to a refreshed source; future values outside currently observed minima/maxima are still classified by the inequality rules.
+
+**Gate A status: PASS — cutoffs and membership counts frozen.** No outcome-bearing query was run to select thresholds. The later per-arm support gate is **PENDING**.
 
 ## 4. Minimum cell support and QA
 
@@ -68,11 +92,11 @@ Before narrating results, check:
 
 ## 7. Deliverables and workflow
 
-1. **Owner-approved 2026-11-05:** descriptive frequency and recency dimensions, outcome-blind discrete tertiles, support gates and multiplicity plan. Empirical cutoff values remain pending Gate A execution and explicit freeze.
-2. Execute `sql/analysis/04_segment_distribution_precheck.sql` (BigQuery region US, whole script). Inspect its two result sets: distribution/cutoff/gate and membership counts. Record owner-executed evidence, stop conditions and freeze empirical boundaries before outcome SQL (Gate A).
-3. Segment-rate descriptive SQL, inferential/interaction SQL, multiplicity checks, independent reconciliation QA, documented limitations.
+1. **Owner-approved and frozen 2026-11-05:** descriptive frequency and recency dimensions, pooled exact-discrete-tertile rules and numeric thresholds; no target used to select thresholds.
+2. **Completed Gate A:** owner executed `sql/analysis/04_segment_distribution_precheck.sql`, supplied two result sets, both dimensions PASS; cutoff values and membership counts documented above.
+3. Next execute `sql/analysis/05_segment_observed_response.sql` to verify per-arm support, segmented source reconciliation and observed response contrasts (Gate B). Run inferential/interaction SQL and multiplicity checks **only after** Gate B is reviewed.
 4. Update README/CHANGELOG/DECISIONS. Note: current README still calls PR #6 Draft even though GitHub confirms it merged; correct this in a separate commit in the same Session 06 feature PR.
 5. Evidence of tests/queries **only after the owner has actually run them**; report bytes/costs if measured, never infer actual charges.
 6. Review the feature diff; obtain explicit owner approval before squash merge into `main`. Keep the Project Master private. CI/CD is out of scope for this PR.
 
-**Current gate status:** Contract APPROVED / empirical cutoffs PENDING; temporal eligibility NOT VERIFIED; distribution and response segment QA NOT RUN; causal identification NOT VERIFIED. The GitHub script's presence does not prove execution.
+**Current gate status:** Contract APPROVED; empirical cutoffs FROZEN / Gate A PASS (owner-executed); arm-level support/response SQL Gate B NOT RUN; temporal eligibility NOT VERIFIED; causal identification NOT VERIFIED. Versioned SQL alone does not prove execution.
