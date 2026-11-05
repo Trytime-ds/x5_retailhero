@@ -84,14 +84,16 @@ The project combines SQL-based analysis, analytics engineering, customer segment
 - Source-defined treatment/control comparison is descriptive; randomization,
   SMS T0, actual delivery and outcome window are not independently verified.
 
-**Phase 7 — Descriptive response heterogeneity: Gates A–D PASS (Draft PR #7)**
+**Phase 7 — Descriptive response heterogeneity: Gates A–F PASS (Draft PR #7)**
 
 - Frozen outcome-blind segment cutoffs across **200,039** train clients:
   frequency 90d Low 1–8 / Medium 9–18 / High 19+ tickets;
   recency Recent 0–2 / Intermediate 3–7 / Less recent 8+ days.
-- Owner executed four versioned BigQuery scripts: distribution, arm-level
-  descriptive response, conditional inference/FDR and composition/overlap QA.
-  Gates A–D PASS within declared scope; no extra dbt mart or CI execution.
+- Owner executed six versioned BigQuery scripts for Gates A–F:
+  distribution, response, conditional inference/FDR, composition,
+  joint 3x3 response and common-weight standardization.
+  Gates A–F PASS in their declared descriptive/statistical scopes;
+  no new causal assumptions or automated CI execution.
 - Observed source-defined treatment−control response RD by frequency:
   **+4.5792 / +3.2506 / +1.4848 pp** (Low/Medium/High); by recency:
   **+2.5544 / +3.5101 / +4.0534 pp** (Recent/Intermediate/Less recent).
@@ -99,11 +101,30 @@ The project combines SQL-based analysis, analytics engineering, customer segment
   contrasts have q<0.05. This is not an identified causal SMS effect.
 - Outcome-blind composition checks: all 6 companion SMD values below
   0.1 absolute; 9 cross-cells reconcile all 200,039 train clients.
+- All nine post-hoc cross-cells pass sample support. Composition-
+  standardized global observed RD is **+3.2112 pp**, versus **+3.3231 pp**
+  unstandardized; this is descriptive sensitivity, not causal.
 - [Analytical findings and CRM decision memo](docs/SESSION_06_ANALYTICAL_FINDINGS.md)
   and [full segment contract and QA](docs/SEGMENT_HETEROGENEITY_CONTRACTS.md).
   PR #7 remains **Draft / awaiting owner review and explicit merge approval**.
 
-**Current focus: descriptive segment heterogeneity, interpretation and review of PR #7**, with explicit restrictions on temporal eligibility and causal/economic interpretation.
+**Phase 8 — Aggregated BI reporting interface: Independent BigQuery QA PASS; dbt CLI evidence pending (Draft PR #7)**
+
+- Authored `rpt_experiment_response_segments` as a **BigQuery view** with
+  16 aggregated rows and four non-additive analytical scopes:
+  global (1), frequency (3), recency (3) and joint (9).
+- Each scope independently covers **200,039** clients; combined sums
+  across scopes would count the same people four times.
+- Owner-executed independent BigQuery reporting QA: **4/4 scopes
+  `PASS_RECONCILED`** and **16/16 unique keys**; zero bad counts,
+  metrics, confidence-interval placement or semantic/support flags.
+- The `dbt run` and `dbt test` CLI logs have not yet been shared, so
+  the full model execution/test gate remains pending evidence.
+- See [reporting contract and QA evidence](docs/REPORTING_LAYER_CONTRACT.md)
+  and [Part 2 analytical contract](docs/SESSION_06_PART2_CONTRACT.md).
+  Power BI modelling and dashboards are deferred to Session 07.
+
+**Current focus: dbt CLI validation evidence, documentation and review of Draft PR #7**, without claiming causal SMS uplift or monetary impact.
 
 Observed treatment/control covariate balance does **not** establish randomization. The intervention time, assignment mechanism and outcome observation window have not been verified. The observed +3.3231 percentage point source-defined binary response difference must **not** be interpreted as proven SMS incrementality.
 
@@ -121,7 +142,9 @@ See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence
 - [x] Experiment response analysis mart technical QA (PR #6 merged)
 - [ ] Further intermediate models and trusted analytical marts
 - [ ] Customer behavior analysis and pre-treatment features
-- [x] Descriptive segment-level response heterogeneity (Gates A–D; PR #7 pending merge)
+- [x] Descriptive segment-level response heterogeneity (Gates A–F; PR #7 pending merge)
+- [ ] Reporting view technical gate (BigQuery QA PASS; dbt run/test logs pending)
+- [ ] Power BI dashboard (Session 07)
 - [ ] Verified prospective campaign effectiveness / causal experiment
 - [ ] Post-MVP: individual uplift modeling
 
