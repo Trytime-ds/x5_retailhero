@@ -67,12 +67,15 @@
   60,363/63,639 positive outcomes.
 - **Evidence boundary:** The independent QA successfully queried the
   reporting object, but the owner has **not supplied `dbt run`
-  or `dbt test` CLI results**. Full Gate G technical execution/testing
-  is therefore pending, not yet marked PASS end-to-end. No CI
-  execution, monetary charges or BigQuery bytes-scanned metrics
-  are inferred.
-- **Scope boundary:** Power BI modelling/DAX/dashboard postponed to
-  Session 07. No causal SMS incrementality, individualized uplift,
+  or `dbt test` CLI results** at the time of that preliminary QA.
+  **Later owner-run dbt evidence (same date):** reporting view model
+  **1/1 PASS** in 13.95s and **28/28 data tests PASS** in 29.70s,
+  both with zero WARN/ERROR. Together with BigQuery 4/4 scope QA,
+  **Gate G is technically PASS**. No automated CI, monetary charges
+  or bytes-scanned metrics are inferred.
+- **Scope boundary:** Gate G reporting layer built and validated; Power BI
+  modelling/DAX/dashboard postponed to Session 07. No causal SMS
+  incrementality, individualized uplift,
   targeting rollout, revenue or ROI claims. PR #7 remains Draft.
 
 ## 2026-11-02 — Session 05 (experiment response mart / Draft PR #6)
