@@ -1,6 +1,6 @@
 # Session 06 — Gate G reporting layer contract
 
-**Status:** DESIGN READY; dbt view and validation NOT YET OWNER-EXECUTED.
+**Status:** Independent BigQuery Gate G reporting reconciliation PASS (owner-provided on 2026-11-05). BigQuery view is queryable. CLI `dbt run` and `dbt test` logs NOT YET SHARED; full technical gate remains pending evidence.
 **Handoff:** Power BI dashboard work is reserved for Session 07.
 **Input:** `{{ ref('mart_experiment_analysis') }}`, 200,039 labeled clients,
 observed historical behavioral context (not proven pre-SMS).
@@ -88,6 +88,43 @@ recency labels are dimension attributes.
    if available. A published SQL/view file is NOT evidence it ran.
 7. Keep PR #7 Draft until user reviews and authorizes merge.
    Keep Project Master private. CI/CD deployment remains out of scope.
+
+## Gate G owner-reported independent BigQuery evidence — 2026-11-05
+
+The owner executed `sql/qa/14_reporting_segments_reconciliation.sql`
+on the reporting object in `x5_dbt_dev` and shared its two result
+sets. **Each of the four alternative analytical scopes has
+`PASS_RECONCILED`**:
+
+| Scope | Expected / actual reporting rows | Clients | Control n | Treatment n | Control positive | Treatment positive |
+|---|---|---:|---:|---:|---:|---:|
+| overall | 1 / 1 | 200,039 | 100,058 | 99,981 | 60,363 | 63,639 |
+| frequency | 3 / 3 | 200,039 | 100,058 | 99,981 | 60,363 | 63,639 |
+| recency | 3 / 3 | 200,039 | 100,058 | 99,981 | 60,363 | 63,639 |
+| joint | 9 / 9 | 200,039 | 100,058 | 99,981 | 60,363 | 63,639 |
+
+The independent overall QA returned
+`gate_g_status = PASS_RECONCILED`, with **4 scopes, 0 failing scopes,
+16 expected keys, 16 actual rows, 16 distinct keys, 0 missing/mismatched
+expected keys, 0 unexpected keys, 0 bad rate/count rows, 0 improper
+joint inference/standardization rows, 0 missing nonjoint uncertainty/
+standardization rows, 0 bad semantic/support flags, 200,039 distinct
+source clients and 0 invalid source rows**. The expected
+100,058/99,981 treatment/control counts are unchanged.
+
+**Interpretation:** the reporting relation is queryable and the
+separate BigQuery reconciliation passes. The supplied results are
+evidence of **warehouse-side output validity**, not a transcript of the
+dbt build or its schema/singular tests. No `dbt run`/`dbt test` output
+was supplied. **Do not mark Gate G technical build/test COMPLETE until
+the CLI run and tests are supplied and reviewed.** Actual BigQuery
+bytes processed, elapsed time and costs not yet supplied. No GitHub
+Actions CI has been run/claimed.
+
+This independent check is particularly important because, across the
+four scopes, an erroneous total `SUM(clients)` would be **800,156**,
+not the true 200,039 unique source customers. The `analysis_scope`
+field is mandatory for correct Power BI filter context in Session 07.
 
 ## Explicit exclusions
 
