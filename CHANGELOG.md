@@ -1,5 +1,44 @@
 # Changelog
 
+## 2026-11-05 — Session 06 (descriptive segment heterogeneity / Draft PR #7)
+
+### Added
+- `docs/SEGMENT_HETEROGENEITY_CONTRACTS.md`: approved definitions, owner-run Gate A–D evidence, statistics, cautions.
+- Four versioned BigQuery analysis scripts `04_segment_distribution_precheck.sql`,
+  `05_segment_observed_response.sql`, `06_segment_response_inference.sql`,
+  `07_segment_composition_diagnostics.sql`.
+- `docs/SESSION_06_ANALYTICAL_FINDINGS.md`: CRM-oriented decision memo with
+  observation/assumption/hypothesis/action separation.
+
+### Owner-executed BigQuery evidence — all four gates within defined scope
+- Gate A: exact outcome-blind tertiles frozen from 200,039 train clients.
+  Frequency cutoffs 8/18; recency 2/7; zero missing and negative;
+  complete six-bin coverage.
+- Gate B: six segments with `PASS_SUPPORT`; two dimensions
+  `PASS_RECONCILED` to 100,058 control / 99,981 treatment clients
+  and source positives 60,363 / 63,639.
+- Gate C: six observed RD/RR and 95% CIs, six within-segment proportion
+  tests and four difference-in-RDs contrasts; independent arithmetic
+  matches reported SQL precision. BH-FDR at 0.05: 6/6 within-segment,
+  3/4 predeclared heterogeneity contrasts significant **descriptively**
+  under large-sample independent-binomial assumptions.
+- Gate D: companion-feature SMDs all <0.1 in absolute value (max
+  0.010189); nine frequency×recency cells reconcile 200,039 clients
+  / 100,058 controls / 99,981 treatment, maximum arm-mix delta 0.1917 pp.
+- No new dbt models; no Session 06 GitHub Actions CI/dbt build claims;
+  warehouse execution was by the owner, with independent arithmetic
+  checks of supplied results. Actual processing bytes/costs not supplied.
+
+### Boundaries and remaining gates
+- Segment features end at the **observed** 2019-03-18 history cutoff,
+  **not verified SMS T0**. Assignment, SMS delivery and target outcome
+  observation window remain unverified.
+- Descriptive differences and low SMD **do not prove causal uplift,
+  absence of confounding or targeting eligibility**; no ROI/individual
+  uplift/deployment claim. PR #7 is Draft and unmerged pending owner review.
+- Session 05 PR #6 **was merged** to main as `6210d9c` on
+  2026-11-02 (Chile time); older Draft descriptions below are historical.
+
 ## 2026-11-02 — Session 05 (experiment response mart / Draft PR #6)
 
 ### Added and technically validated
