@@ -1,6 +1,6 @@
 # Session 06 — Part 2 analytical and reporting contract
 
-**Status:** Gates E and F owner-executed PASS on 2026-11-05; Gate G independent BigQuery reconciliation owner-reported PASS, dbt CLI build/test logs still pending. Approved session scope by owner:
+**Status:** Gates E, F and G owner-executed PASS on 2026-11-05. Gate G evidence: dbt view run 1/1 PASS, dbt tests 28/28 PASS, BigQuery independent QA 4/4 scopes PASS; PR #7 remains Draft. Approved session scope by owner:
 joint frequency×recency analysis → robustness/sensitivity → reporting layer →
 documentation and review; **Power BI dashboard deferred to Session 07**.
 Existing Gates A–D passed on owner-executed BigQuery 2026-11-05; PR #7 stays Draft.
@@ -190,16 +190,13 @@ improper confidence intervals or standardized measures in the
 nine post-hoc joint rows, zero missing allowed nonjoint measures,
 zero semantic/support errors and zero invalid source rows.
 
-The query successfully accessed the BigQuery reporting object,
-but **the owner has not yet shared the CLI log for**
-`dbt run --project-dir dbt --select rpt_experiment_response_segments`
-**or for**
-`dbt test --project-dir dbt --select
-rpt_experiment_response_segments
-assert_reporting_response_scope_reconciliation`.
-Technical build/test confirmation is **PENDING**, despite independent
-warehouse reconciliation PASS. No new dbt execution evidence is
-invented. View bytes scanned and processing cost remain unreported.
+**Subsequent owner-supplied CLI evidence (2026-11-05):** the dbt
+reporting **view ran 1/1 PASS** in **13.95 seconds**, with
+`WARN=0, ERROR=0`. The selected test suite completed **28/28 PASS**
+in **29.70 seconds**, also `WARN=0, ERROR=0`. Together with
+independent warehouse reconciliation, **Gate G is technically PASS**.
+These results were owner-executed, not CI. View bytes scanned and
+processing cost remain unreported.
 
 The four scopes are four alternative cuts of the **same** customers,
 not four independent populations. Power BI remains the work of
