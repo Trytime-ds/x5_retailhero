@@ -1,6 +1,6 @@
 # Session 06 — Descriptive Response Heterogeneity Contract
 
-**Status:** Design APPROVED and empirical cutoffs FROZEN from owner-executed BigQuery Gate A on 2026-11-05. Gate A distribution PASS (both dimensions); no Session 06 response or inference queries have been executed.
+**Status:** Owner-executed Gates A, B, C and D PASS within their descriptive/statistical scope on 2026-11-05; frequency/recency boundaries FROZEN. PR #7 under review, NOT merged. Causal/temporal validity NOT VERIFIED.
 **Scope:** Outcome-blind segment design first; descriptive treatment/control response comparisons second.
 **Base:** `mart_experiment_analysis` in BigQuery `x5_dbt_dev`; one row per 200,039 distinct `stg_uplift_train` clients.
 **History anchor:** 2019-03-18, observed purchase-history end. **NOT** independently verified SMS T0.
@@ -146,7 +146,43 @@ Following Gate C PASS, run `sql/analysis/07_segment_composition_diagnostics.sql`
 - **Guardrails:** verify exact source 200,039 unique clients, 100,058 controls, 99,981 treatments, six frozen memberships. The script has no outcome variable; it does not attempt to estimate adjusted causal effects or infer randomization from covariate balance.
 - **Interpretation:** a large overlap or composition difference may help explain observed gradients. No predefined additional outcome segmentation is authorized; a post-hoc sensitivity analysis would need separate labeling and justification.
 
-**Gate D status: NOT RUN.** Await owner-executed BigQuery output; no robustness conclusion is currently justified.
+### Gate D owner execution evidence — 2026-11-05
+
+Owner executed `sql/analysis/07_segment_composition_diagnostics.sql` in BigQuery US and shared **both result sets**; the assistant independently summed 9 cross-cells and their arm counts. No CI or independent warehouse execution is claimed.
+
+**Outcome-blind companion-feature diagnostics (control vs treatment within the frozen segment):**
+
+| Dimension | Segment | Companion | Control mean / median | Treatment mean / median | SMD | Gate flag |
+|---|---|---|---|---|---:|---|
+| Frequency | Low | Recency (days) | 9.0883 / 8 | 9.0987 / 8 | +0.001764 | NO_LARGE_SMD_OBSERVED |
+| Frequency | Medium | Recency (days) | 5.4082 / 4 | 5.4265 / 4 | +0.003579 | NO_LARGE_SMD_OBSERVED |
+| Frequency | High | Recency (days) | 2.5722 / 1 | 2.6032 / 1 | +0.008661 | NO_LARGE_SMD_OBSERVED |
+| Recency | Recent | 90d transactions | 23.6338 / 20 | 23.7191 / 20 | +0.005087 | NO_LARGE_SMD_OBSERVED |
+| Recency | Intermediate | 90d transactions | 13.9264 / 12 | 14.0282 / 12 | +0.009821 | NO_LARGE_SMD_OBSERVED |
+| Recency | Less recent | 90d transactions | 8.7603 / 7 | 8.8382 / 7 | +0.010189 | NO_LARGE_SMD_OBSERVED |
+
+Maximum absolute companion SMD = **0.010189**, below review threshold **0.1** in all six groups. This only checks one **other historical metric** at a time, not all confounders or assignment validity.
+
+**Frequency × recency overlap (outcome-blind):**
+
+| Frequency | Recency | Clients | Control | Treatment | Treatment minus control mix (pp of respective arm) |
+|---|---|---:|---:|---:|---:|
+| Low | Recent | 9,944 | 5,001 | 4,943 | -0.0542 |
+| Low | Intermediate | 20,753 | 10,374 | 10,379 | +0.0130 |
+| Low | Less recent | 39,247 | 19,721 | 19,526 | -0.1799 |
+| Medium | Recent | 25,301 | 12,718 | 12,583 | -0.1252 |
+| Medium | Intermediate | 23,426 | 11,780 | 11,646 | -0.1250 |
+| Medium | Less recent | 19,590 | 9,783 | 9,807 | +0.0315 |
+| High | Recent | 40,820 | 20,322 | 20,498 | +0.1917 |
+| High | Intermediate | 15,025 | 7,470 | 7,555 | +0.0908 |
+| High | Less recent | 5,933 | 2,889 | 3,044 | +0.1573 |
+
+**Independent aggregate reconciliation:** cross-cells sum to **200,039 clients**, **100,058 control**, **99,981 treatment**. Frequency marginals: 69,944 / 68,317 / 61,778. Recency marginals: 76,065 / 59,204 / 64,770. Largest absolute arm-composition delta in a cross-cell = **0.1917 percentage points**. Strong overlap: High+Recent = 40,820 (20.41% of train) while Low+Less recent = 39,247 (19.62%); High+Less recent = 5,933 (2.97%). These dimensions are related and their subgroup observations **cannot be added together as independent opportunities**.
+
+**Gate D: PASS for predeclared outcome-blind composition diagnostics and reconciliation.** This is NOT a prospective sensitivity test on outcome data, a causal adjustment, proof of pre-SMS timing, verified randomization or absence of unobserved confounding.
+
+**Remaining:** executive/technical narrative, portfolio documentation hygiene, final PR review and explicit merge decision. No automated dbt/CI execution occurred for Session 06.
+
 
 ## 7. Deliverables and workflow
 
@@ -157,4 +193,4 @@ Following Gate C PASS, run `sql/analysis/07_segment_composition_diagnostics.sql`
 5. Evidence of tests/queries **only after the owner has actually run them**; report bytes/costs if measured, never infer actual charges.
 6. Review the feature diff; obtain explicit owner approval before squash merge into `main`. Keep the Project Master private. CI/CD is out of scope for this PR.
 
-**Current gate status:** Contract APPROVED, cutoffs FROZEN, Gate A PASS, Gate B PASS, Gate C PASS conditional (all owner-executed); Gate D composition diagnostics NOT RUN; business communication PENDING; temporal eligibility and causal identification NOT VERIFIED. Versioned SQL alone does not prove execution.
+**Current gate status:** Contract APPROVED; cutoffs FROZEN; Gates A, B, D PASS and C PASS conditional (all owner-executed). Technical statistical readout completed; executive interpretation and final review in progress. Temporal eligibility and causal identification NOT VERIFIED. PR #7 remains Draft/unmerged. Versioned SQL alone does not prove execution.
