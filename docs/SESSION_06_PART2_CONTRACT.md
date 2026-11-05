@@ -1,6 +1,6 @@
 # Session 06 — Part 2 analytical and reporting contract
 
-**Status:** Gates E and F owner-executed PASS on 2026-11-05; Gate G dbt reporting view/schema/QA authored but NOT BUILT/TESTED. Approved session scope by owner:
+**Status:** Gates E and F owner-executed PASS on 2026-11-05; Gate G independent BigQuery reconciliation owner-reported PASS, dbt CLI build/test logs still pending. Approved session scope by owner:
 joint frequency×recency analysis → robustness/sensitivity → reporting layer →
 documentation and review; **Power BI dashboard deferred to Session 07**.
 Existing Gates A–D passed on owner-executed BigQuery 2026-11-05; PR #7 stays Draft.
@@ -168,7 +168,7 @@ same 200,039 clients**, never additive. Supply `sort_order`, explicit
 that imply verified uplift or economic contribution. Do not embed
 historical experimental results as static hardcoded reporting data.
 
-**Design implemented (NOT BUILT YET):** `dbt/models/reporting/rpt_experiment_response_segments.sql` uses a BigQuery **view**, with schema contract `dbt/models/reporting/_reporting.yml`, singular source-count and scope reconciliation test `dbt/tests/assert_reporting_response_scope_reconciliation.sql`, and independent BigQuery QA `sql/qa/14_reporting_segments_reconciliation.sql`. See `docs/REPORTING_LAYER_CONTRACT.md` for grain, measures and null inferential fields in joint scope. A view does not duplicate stored customer tables but recomputes aggregations on query; actual resource usage is not yet measured. **Nothing has been deployed or tested in BigQuery as part of Gate G.**
+**Design implemented (NOT BUILT YET):** `dbt/models/reporting/rpt_experiment_response_segments.sql` uses a BigQuery **view**, with schema contract `dbt/models/reporting/_reporting.yml`, singular source-count and scope reconciliation test `dbt/tests/assert_reporting_response_scope_reconciliation.sql`, and independent BigQuery QA `sql/qa/14_reporting_segments_reconciliation.sql`. See `docs/REPORTING_LAYER_CONTRACT.md` for grain, measures and null inferential fields in joint scope. A view does not duplicate stored customer tables but recomputes aggregations on query; actual resource usage is not yet measured. **BigQuery independent QA now PASS based on owner-reported output; CLI dbt run/test evidence still pending.**
 
 **Reporting QA:** expected 16 total rows (1 overall+3+3+9);
 reconcile *each scope separately* to 200,039 clients / 100,058
@@ -176,6 +176,34 @@ controls / 99,981 treatment and 60,363 / 63,639 positive outcomes,
 while ensuring source overall population is never added 4 times.
 Validate recomputed ratios from raw counts, null-safe treatment of
 zero denominators and compatibility with future Power BI consumption.
+
+### Gate G independent BigQuery QA evidence — 2026-11-05
+
+Owner ran `sql/qa/14_reporting_segments_reconciliation.sql` against
+the reporting object and shared both result sets. **4/4 scopes
+`PASS_RECONCILED`**, each reproducing 200,039 labeled clients,
+100,058 control, 99,981 treatment, 60,363 control positive and
+63,639 treatment positive. The overall `gate_g_status` is
+`PASS_RECONCILED` with **16 rows / 16 distinct keys**, zero
+mismatched/extra/missing keys, zero incorrect rates/counts, zero
+improper confidence intervals or standardized measures in the
+nine post-hoc joint rows, zero missing allowed nonjoint measures,
+zero semantic/support errors and zero invalid source rows.
+
+The query successfully accessed the BigQuery reporting object,
+but **the owner has not yet shared the CLI log for**
+`dbt run --project-dir dbt --select rpt_experiment_response_segments`
+**or for**
+`dbt test --project-dir dbt --select
+rpt_experiment_response_segments
+assert_reporting_response_scope_reconciliation`.
+Technical build/test confirmation is **PENDING**, despite independent
+warehouse reconciliation PASS. No new dbt execution evidence is
+invented. View bytes scanned and processing cost remain unreported.
+
+The four scopes are four alternative cuts of the **same** customers,
+not four independent populations. Power BI remains the work of
+Session 07.
 
 ## Documentation and approval
 
