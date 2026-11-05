@@ -1,6 +1,6 @@
 # Session 06 — Observed response heterogeneity: analytical findings
 
-**Status:** Descriptive analysis Gates A–F completed by project owner on 2026-11-05. Gate G reporting view queryable and independent BigQuery QA PASS; dbt run/test logs not yet provided. PR #7 is Draft and not merged. **This is a noncausal case study; not a validated campaign optimization policy.**
+**Status:** Descriptive analysis Gates A–F completed by project owner on 2026-11-05. Gate G reporting view PASS (owner-run dbt view 1/1, tests 28/28 and independent BigQuery QA 4/4 scopes). PR #7 is Draft and not merged. **This is a noncausal case study; not a validated campaign optimization policy.**
 
 ## Executive summary
 
@@ -105,8 +105,9 @@ with alternative `analysis_scope` categories `overall`,
 contains all 200,039 clients, so scopes are **non-additive**.
 Model tests and an independent QA script are versioned;
 owner-run independent BigQuery QA PASS confirmed 4/4 scopes, 16/16
-unique keys, no mismatches/invalid semantics. This does **not**
-validate unprovided dbt run/test CLI output. The
+unique keys, no mismatches/invalid semantics; separately, owner-reported
+`dbt run` **1/1 PASS** (13.95s) and `dbt test` **28/28 PASS** (29.70s)
+with no warnings/errors. Gate G technical status **PASS**. The
 Power BI dashboard belongs to Session 07.
 
 ## Decision memo for CRM
@@ -124,6 +125,6 @@ Power BI dashboard belongs to Session 07.
 - Gates A–F: `sql/analysis/04_segment_distribution_precheck.sql` through `09_joint_composition_standardization.sql`. Gates A–F were owner-executed, not CI.
 - Numerical detail and source rows: `docs/SEGMENT_HETEROGENEITY_CONTRACTS.md`.
 - All reported BigQuery results were **executed by the project owner and shared in conversation**; code was published on the feature branch. The assistant recalculated selected checks; there is **no GitHub Actions CI/warehouse run** or full independent warehouse rerun. Processing bytes/charges have not been reported.
-- PR #7 remains Draft; final human review/explicit merge decision pending. A new 16-row **reporting view** is queryable with owner-run independent BigQuery QA PASS; dbt CLI run/test outputs remain unverified. The existing source-level experiment mart is unchanged. The Project Master remains private.
+- PR #7 remains Draft; final human review/explicit merge decision pending. The 16-row **reporting view** is built (owner-reported dbt run/test PASS) and independently reconciled in BigQuery (4/4 scope PASS). The existing source-level experiment mart is unchanged. The Project Master remains private.
 
 **Decision status:** analytical reporting **GO WITH LIMITATIONS**; causal identification and deployment **NOT VERIFIED / NOT APPROVED**.
