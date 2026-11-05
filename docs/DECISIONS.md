@@ -156,5 +156,49 @@ p < 1e-10. All three inferential boolean checks passed.
 These statistics depend on independent-binomial and large-sample
 assumptions; small p-values and confidence intervals do NOT establish
 causal SMS incrementality. Resource bytes/charges remain unreported,
-and owner review and merge of Draft PR #6 remain pending. Monetary, causal and targeting-deployment
+and PR #6 was subsequently squash-merged to main on 2026-11-02
+(Chile time) as commit `6210d9c`. Monetary, causal and targeting-deployment
 claims remain out of scope.
+
+## DEC-015 — Outcome-blind descriptive segmentation and conditional heterogeneity (Session 06)
+
+Owner approved *two separate descriptive dimensions* before analyzing
+segment outcomes: `transactions_90d` (frequency) and
+`recency_days_at_history_end` (recency). Exact pooled discrete tertiles
+on the 200,039 labeled train clients produced frozen frequency cutoffs
+8/18 and recency 2/7. Boundaries are never retuned using target.
+Six segments cover the full labeled train set independently by dimension.
+
+Gate A (distribution), Gate B (response / source reconciliation),
+Gate C (six within-segment comparisons and four prespecified RD
+heterogeneity contrasts with 95% intervals and BH-FDR), and Gate D
+(outcome-blind companion-feature SMD / 9-cell overlap diagnostic)
+were executed by the project owner in BigQuery US on 2026-11-05.
+Reported Gate B supports: 6/6 `PASS_SUPPORT`, 2/2
+`PASS_RECONCILED`; Gate C arithmetic matches independent reference.
+Observed frequency Low/Medium/High RDs: +4.5792 / +3.2506 / +1.4848
+pp; recency Recent/Intermediate/Less recent: +2.5544 / +3.5101 /
++4.0534 pp. Three of four BH-adjusted *descriptive* differences
+in RDs meet q<0.05; the intermediate-vs-recent comparison does not.
+Gate D: maximum absolute companion SMD 0.010189; the nine
+frequency×recency cells reconcile all 200,039 clients, with
+max absolute arm composition delta 0.1917 pp. The two segment
+dimensions overlap substantially and are not additive opportunities.
+
+Interpretation: customer historical activity is associated with binary
+target rates and observed treatment/control contrasts. This cannot
+identify causal SMS effectiveness or individual uplift: source
+randomization, exposure, intervention timing, target outcome window
+and certified pre-SMS feature eligibility are still NOT VERIFIED.
+The high-frequency arm's high baseline response also means absolute
+risk differences may be constrained by ceiling effects. Small SMD
+values do not prove exchangeability. The exploratory FDR results are
+not confirmatory due to assumptions and reuse of customers across
+dimensions. Recommendation is to formulate and prospectively test
+hypotheses in an auditable randomized CRM experiment; **no rollout**.
+
+No new dbt model, warehouse CI, incremental revenue or ROI computation.
+Queries and owner-reported results are versioned in
+`docs/SEGMENT_HETEROGENEITY_CONTRACTS.md` and
+`docs/SESSION_06_ANALYTICAL_FINDINGS.md`; PR #7 remains Draft
+until explicit owner review/approval.
