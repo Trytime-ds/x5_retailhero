@@ -1,6 +1,6 @@
 # Session 06 — Observed response heterogeneity: analytical findings
 
-**Status:** Descriptive analysis Gates A–F completed by project owner on 2026-11-05. Gate G reporting view authored; construction/QA not yet run. PR #7 is Draft and not merged. **This is a noncausal case study; not a validated campaign optimization policy.**
+**Status:** Descriptive analysis Gates A–F completed by project owner on 2026-11-05. Gate G reporting view queryable and independent BigQuery QA PASS; dbt run/test logs not yet provided. PR #7 is Draft and not merged. **This is a noncausal case study; not a validated campaign optimization policy.**
 
 ## Executive summary
 
@@ -98,13 +98,15 @@ establish exchangeability, feature pre-treatment eligibility, the
 causal SMS response, or a statistically adjusted confirmation
 of the post-hoc nine-cell associations.
 
-**Gate G reporting model proposed, NOT RUN:** the 16-row
+**Gate G reporting model independently QA-validated (dbt execution logs pending):** the 16-row
 `rpt_experiment_response_segments` BigQuery dbt view is authored
 with alternative `analysis_scope` categories `overall`,
 `frequency`, `recency`, and `joint`. Each scope separately
 contains all 200,039 clients, so scopes are **non-additive**.
 Model tests and an independent QA script are versioned;
-warehouse creation and its outcomes remain pending. The
+owner-run independent BigQuery QA PASS confirmed 4/4 scopes, 16/16
+unique keys, no mismatches/invalid semantics. This does **not**
+validate unprovided dbt run/test CLI output. The
 Power BI dashboard belongs to Session 07.
 
 ## Decision memo for CRM
@@ -122,6 +124,6 @@ Power BI dashboard belongs to Session 07.
 - Gates A–F: `sql/analysis/04_segment_distribution_precheck.sql` through `09_joint_composition_standardization.sql`. Gates A–F were owner-executed, not CI.
 - Numerical detail and source rows: `docs/SEGMENT_HETEROGENEITY_CONTRACTS.md`.
 - All reported BigQuery results were **executed by the project owner and shared in conversation**; code was published on the feature branch. The assistant recalculated selected checks; there is **no GitHub Actions CI/warehouse run** or full independent warehouse rerun. Processing bytes/charges have not been reported.
-- PR #7 remains Draft; final human review/explicit merge decision pending. A new 16-row **reporting view** is authored but has not yet been created/tested in BigQuery. The existing source-level experiment mart is unchanged. The Project Master remains private.
+- PR #7 remains Draft; final human review/explicit merge decision pending. A new 16-row **reporting view** is queryable with owner-run independent BigQuery QA PASS; dbt CLI run/test outputs remain unverified. The existing source-level experiment mart is unchanged. The Project Master remains private.
 
 **Decision status:** analytical reporting **GO WITH LIMITATIONS**; causal identification and deployment **NOT VERIFIED / NOT APPROVED**.
