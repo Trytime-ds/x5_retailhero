@@ -12,34 +12,37 @@
 -- are exploratory, correlated and conditional on model assumptions.
 --
 -- GoogleSQL has no native normal CDF. The two-sided p below uses the
--- Abramowitz-Stegun 7.1.26 5-term normal-tail approximation; report as
--- APPROXIMATE, not an exact p-value. Validate against reference calculations.
+-- Numerical Recipes erfc normal-tail approximation; report as
+-- APPROXIMATE, not an exact p-value. Reference checked against erfc in
+-- independent arithmetic (relative error under 1e-6 on the six observed z).
 -- Output set 1: 6 per-segment RD/RR, 95% CIs, z, p, BH q.
 -- Output set 2: 4 difference-in-RDs vs fixed reference, 95% CIs, p, BH q.
 
-CREATE TEMP FUNCTION norm_t(z FLOAT64) AS (
-    SAFE_DIVIDE(1.0, 1.0 + 0.2316419 * ABS(z))
+-- Two-sided normal tail p = erfc(|z| / sqrt(2)).
+-- This stable erfc approximation avoids cancellation from 1-Phi(|z|).
+CREATE TEMP FUNCTION erfc_t(z FLOAT64) AS (
+    SAFE_DIVIDE(1.0, 1.0 + 0.5 * ABS(z) / SQRT(2.0))
 );
-CREATE TEMP FUNCTION norm_poly(t FLOAT64) AS (
-    t * (0.319381530
-    + t * (-0.356563782
-    + t * (1.781477937
-    + t * (-1.821255978
-    + t * 1.330274429))))
+CREATE TEMP FUNCTION erfc_poly(t FLOAT64) AS (
+    -1.26551223
+    + t * (1.00002368
+    + t * (0.37409196
+    + t * (0.09678418
+    + t * (-0.18628806
+    + t * (0.27886807
+    + t * (-1.13520398
+    + t * (1.48851587
+    + t * (-0.82215223
+    + t * 0.17087277))))))))
 );
 CREATE TEMP FUNCTION normal_two_sided_p_approx(z FLOAT64) AS (
     IF(
         z IS NULL,
         NULL,
-        LEAST(
-            1.0,
-            GREATEST(
-                0.0,
-                2.0 * EXP(-0.5 * POW(z, 2))
-                    / SQRT(2.0 * ACOS(-1.0))
-                    * norm_poly(norm_t(z))
-            )
-        )
+        LEAST(1.0, GREATEST(0.0,
+            erfc_t(z) * EXP(-0.5 * POW(z, 2)
+                + erfc_poly(erfc_t(z)))
+        ))
     )
 );
 
