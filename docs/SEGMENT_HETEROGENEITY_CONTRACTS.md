@@ -58,7 +58,7 @@ Executed `sql/analysis/04_segment_distribution_precheck.sql` in BigQuery; owner 
 
 **Reconciliation:** frequency 69,944 + 68,317 + 61,778 = **200,039**; recency 76,065 + 59,204 + 64,770 = **200,039**. Rounded shares may not sum exactly to 100%. The large recency-zero concentration (35,273, ~17.63% of train) and boundary ties are documented. Bins are comparable descriptively, not guaranteed equal size or pre-SMS. The frozen rules require versioned data-change review before application to a refreshed source; future values outside currently observed minima/maxima are still classified by the inequality rules.
 
-**Gate A status: PASS — cutoffs and membership counts frozen.** No outcome-bearing query was run to select thresholds. The later per-arm support gate is **PENDING**.
+**Gate A status: PASS — cutoffs and membership counts frozen.** No outcome-bearing query was run to select thresholds. Subsequent per-arm Gate B also passed.
 
 ## 4. Minimum cell support and QA
 
@@ -87,7 +87,7 @@ For **each dimension separately**, reconciling by arm yields 100,058 control and
 
 **Critical statistical distinction:** every segment exhibits a positive observed treatment–control RD, but the existence of a within-segment difference does not itself prove *heterogeneity*. The follow-on prespecified comparison is the **difference in RDs** against the same-dimension reference. This is still noncausal, conditional on independent-binomial model assumptions, and exploratory.
 
-**Next Gate C (NOT EXECUTED):** `sql/analysis/06_segment_response_inference.sql` computes RD/RR intervals, within-segment proportion tests (family A), between-segment difference-in-RDs tests (family B) and BH-FDR q-values. BigQuery does not have a native normal-tail CDF; the SQL uses an explicitly named normal-tail approximation and must be checked against independent arithmetic. Do not assert these inferential SQL results until owner execution.
+**Gate C executed 2026-11-05:** Owner ran `sql/analysis/06_segment_response_inference.sql` in BigQuery and supplied both result sets. See detailed evidence in §5. Independently recomputed from the owner-provided *integer counts*, not from direct warehouse execution, the 6 observed RD/RR CIs, 6 pooled two-proportion z tests, 4 difference-in-RDs tests and BH-FDR values. Agreement within displayed precision: **PASS under the explicitly conditional statistical assumptions**.
 
 ## 5. Contrasts, uncertainty, and multiplicity
 
@@ -99,6 +99,34 @@ For each eligible segment:
 - Two predefined multiplicity families: (A) up to six within-segment two-arm comparisons (three per dimension); (B) up to four nonreference versus reference RD contrasts (two per dimension). Apply Benjamini–Hochberg FDR separately per family (nominal 0.05), recording all eligible tests and exclusions. Missing recency is descriptive-only and is not added post hoc to the primary families.
 - If percentiles collapse or any cell fails support, flag the limitation; do not cherry-pick remaining significant comparisons. Review the resulting actual family sizes and sensitivity separately.
 - These confidence intervals/p-values describe *observational group contrasts under stated statistical assumptions*; they do not identify causal SMS effects.
+
+### Gate C execution evidence — owner-reported 2026-11-05
+
+Executed `sql/analysis/06_segment_response_inference.sql` in BigQuery US; **two result sets provided**. Independent reference calculation from exact arm counts using normal survival probability (`erfc`), Wald RD intervals, log-Katz RR intervals and BH step-up (families sized 6 and 4) reconciles with the BigQuery approximation to displayed precision. **No CI/warehouse run by GitHub or the assistant.**
+
+**Family A: six within-segment source-defined treatment/control comparisons** (all six BH-adjusted q < 0.05; not proof of causal SMS effect).
+
+| Dimension | Segment | RD pp | RD 95% CI pp | RR | RR 95% CI | Approx. p | BH q |
+|---|---|---:|---|---:|---|---:|---:|
+| Frequency | Low | 4.5792 | [3.8602, 5.2981] | 1.127964 | [1.106785, 1.149548] | 1.07717e-35 | 6.46302e-35 |
+| Frequency | Medium | 3.2506 | [2.5340, 3.9672] | 1.051588 | [1.039978, 1.063327] | 6.38306e-19 | 1.27661e-18 |
+| Frequency | High | 1.4848 | [0.9400, 2.0296] | 1.017385 | [1.010968, 1.023843] | 9.18991e-8 | 9.18991e-8 |
+| Recency | Recent | 2.5544 | [1.9808, 3.1281] | 1.032662 | [1.025228, 1.040150] | 2.70496e-18 | 3.24595e-18 |
+| Recency | Intermediate | 3.5101 | [2.7269, 4.2934] | 1.058722 | [1.045307, 1.072308] | 1.67314e-18 | 2.50971e-18 |
+| Recency | Less recent | 4.0534 | [3.2942, 4.8126] | 1.101753 | [1.081896, 1.121975] | 1.38511e-25 | 4.15534e-25 |
+
+**Family B: four prespecified descriptive heterogeneity contrasts, difference in observed RDs against same-dimension reference**:
+
+| Dimension | Segment − reference | ΔRD pp | 95% CI pp | z | Approx. p | BH q | BH q < 0.05 |
+|---|---|---:|---|---:|---:|---:|---|
+| Frequency | Medium − Low | −1.3285 | [−2.3436, −0.3135] | −2.5653 | 0.01030985 | 0.01374647 | YES |
+| Frequency | High − Low | −3.0944 | [−3.9964, −2.1924] | −6.7236 | 1.77305e-11 | 7.09218e-11 | YES |
+| Recency | Intermediate − Recent | +0.9557 | [−0.0152, 1.9266] | 1.9294 | 0.05368609 | 0.05368609 | NO |
+| Recency | Less recent − Recent | +1.4990 | [0.5474, 2.4506] | 3.0875 | 0.00201852 | 0.00403704 | YES |
+
+**Gate C status: PASS conditional.** Three of four Family B comparisons meet BH q < 0.05, while Recency Intermediate vs Recent does not. CIs shown are **individual unadjusted 95% CIs**; the BH decision uses adjusted *p-values*, not simultaneous confidence intervals. Both families include comparisons based on the same source population across dimensions, so dependence and confirmatory FDR guarantees warrant caution. The source history may not be pre-treatment; segment comparisons are descriptive, and no causal SMS targeting claims are identified. Comparisons of a subgroup RD against the global RD would be statistically dependent; the reported Family B instead uses disjoint reference groups *within each dimension*.
+
+**Review challenge:** Strong gradients in baseline control response could produce bounded-outcome/ceiling effects (frequency High control ~85.4%, frequency Low control ~35.8%). Differences on an absolute risk scale depend on baseline risk. Evaluate historical covariate composition and group overlap before writing CRM conclusions.
 
 ## 6. Challenge, decision and communication
 
@@ -113,9 +141,9 @@ Before narrating results, check:
 
 1. **Owner-approved and frozen 2026-11-05:** descriptive frequency and recency dimensions, pooled exact-discrete-tertile rules and numeric thresholds; no target used to select thresholds.
 2. **Completed Gate A:** owner executed `sql/analysis/04_segment_distribution_precheck.sql`, supplied two result sets, both dimensions PASS; cutoff values and membership counts documented above.
-3. **Completed Gate B:** owner executed `sql/analysis/05_segment_observed_response.sql`, with six `PASS_SUPPORT` statuses and both dimensions `PASS_RECONCILED`; exact arm counts/rates recorded above. **Next:** execute `sql/analysis/06_segment_response_inference.sql` (Gate C) and compare inferential outputs with independent arithmetic.
+3. **Completed Gate B/C:** owner executed `sql/analysis/05_segment_observed_response.sql` (six `PASS_SUPPORT`, both dimensions `PASS_RECONCILED`) and `sql/analysis/06_segment_response_inference.sql` (CIs, z, p approx. and BH q independently reconciled). **Next:** robustness / descriptive composition diagnostics and stakeholder interpretation.
 4. Update README/CHANGELOG/DECISIONS. Note: current README still calls PR #6 Draft even though GitHub confirms it merged; correct this in a separate commit in the same Session 06 feature PR.
 5. Evidence of tests/queries **only after the owner has actually run them**; report bytes/costs if measured, never infer actual charges.
 6. Review the feature diff; obtain explicit owner approval before squash merge into `main`. Keep the Project Master private. CI/CD is out of scope for this PR.
 
-**Current gate status:** Contract APPROVED, cutoffs FROZEN, Gate A PASS, Gate B PASS (both owner-executed); Gate C inference/FDR SQL NOT RUN; temporal eligibility NOT VERIFIED; causal identification NOT VERIFIED. Versioned SQL alone does not prove execution.
+**Current gate status:** Contract APPROVED, cutoffs FROZEN, Gate A PASS, Gate B PASS, Gate C PASS conditional (all owner-executed); robustness/challenge and business communication PENDING; temporal eligibility and causal identification NOT VERIFIED. Versioned SQL alone does not prove execution.
