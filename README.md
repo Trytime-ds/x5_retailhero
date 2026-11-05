@@ -64,7 +64,7 @@ The project combines SQL-based analysis, analytics engineering, customer segment
 - Reconciled **36,583,505** product lines in the 90-day window;
   reference date is the **observed** history end (2019-03-18), NOT SMS T0.
 
-**Phase 6 — Observed experiment response analytics: Technical QA PASS (Draft PR #6)**
+**Phase 6 — Observed experiment response analytics: Technical QA PASS (PR #6 merged)**
 
 - Documented and owner-approved the experiment analysis contract for the
   200,039 labeled training clients; validated source population and left-join
@@ -79,16 +79,35 @@ The project combines SQL-based analysis, analytics engineering, customer segment
   (95% CI **+2.8979 to +3.7483 pp**), z=15.3093 and two-sided
   p < 1e-10 under large-sample independent-binomial assumptions.
   These are **observed differences, not verified causal SMS effects**.
-- Processing-cost evidence and final PR review remain pending. These
-  validations were manual, **not CI**.
+- PR #6 was squash-merged to `main` on 2026-11-02 (Chile time), commit `6210d9c`.
+  Processing-cost evidence remains unavailable; validations were manual, **not CI**.
 - Source-defined treatment/control comparison is descriptive; randomization,
   SMS T0, actual delivery and outcome window are not independently verified.
 
-**Current focus: review and integration of the validated descriptive experiment mart**, with explicit restrictions on temporal eligibility and causal/economic interpretation.
+**Phase 7 — Descriptive response heterogeneity: Gates A–D PASS (Draft PR #7)**
+
+- Frozen outcome-blind segment cutoffs across **200,039** train clients:
+  frequency 90d Low 1–8 / Medium 9–18 / High 19+ tickets;
+  recency Recent 0–2 / Intermediate 3–7 / Less recent 8+ days.
+- Owner executed four versioned BigQuery scripts: distribution, arm-level
+  descriptive response, conditional inference/FDR and composition/overlap QA.
+  Gates A–D PASS within declared scope; no extra dbt mart or CI execution.
+- Observed source-defined treatment−control response RD by frequency:
+  **+4.5792 / +3.2506 / +1.4848 pp** (Low/Medium/High); by recency:
+  **+2.5544 / +3.5101 / +4.0534 pp** (Recent/Intermediate/Less recent).
+- Prespecified descriptive difference-in-RD tests with BH-FDR: **3 of 4**
+  contrasts have q<0.05. This is not an identified causal SMS effect.
+- Outcome-blind composition checks: all 6 companion SMD values below
+  0.1 absolute; 9 cross-cells reconcile all 200,039 train clients.
+- [Analytical findings and CRM decision memo](docs/SESSION_06_ANALYTICAL_FINDINGS.md)
+  and [full segment contract and QA](docs/SEGMENT_HETEROGENEITY_CONTRACTS.md).
+  PR #7 remains **Draft / awaiting owner review and explicit merge approval**.
+
+**Current focus: descriptive segment heterogeneity, interpretation and review of PR #7**, with explicit restrictions on temporal eligibility and causal/economic interpretation.
 
 Observed treatment/control covariate balance does **not** establish randomization. The intervention time, assignment mechanism and outcome observation window have not been verified. The observed +3.3231 percentage point source-defined binary response difference must **not** be interpreted as proven SMS incrementality.
 
-See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence](docs/STAGING_CONTRACTS.md), [transaction contracts and QA](docs/INTERMEDIATE_CONTRACTS.md), [customer history contract and QA](docs/CUSTOMER_PURCHASE_HISTORY_CONTRACTS.md), [behavior snapshot contract and QA](docs/CUSTOMER_BEHAVIOR_SNAPSHOT_CONTRACTS.md), [experiment contract and QA plan](docs/EXPERIMENT_ANALYSIS_CONTRACTS.md), [dbt execution instructions](dbt/README.md), and [milestones](CHANGELOG.md).
+See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence](docs/STAGING_CONTRACTS.md), [transaction contracts and QA](docs/INTERMEDIATE_CONTRACTS.md), [customer history contract and QA](docs/CUSTOMER_PURCHASE_HISTORY_CONTRACTS.md), [behavior snapshot contract and QA](docs/CUSTOMER_BEHAVIOR_SNAPSHOT_CONTRACTS.md), [experiment contract and QA evidence](docs/EXPERIMENT_ANALYSIS_CONTRACTS.md), [dbt execution instructions](dbt/README.md), and [milestones](CHANGELOG.md).
 
 ## Roadmap
 
@@ -99,10 +118,11 @@ See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence
 - [x] Intermediate transaction foundation (PR #3 merged)
 - [x] Customer purchase history intermediate foundation (PR #4 merged)
 - [x] Descriptive customer behavior snapshot (PR #5 validated and merged)
-- [x] Experiment response analysis mart technical QA (PR #6 validated; merge pending)
+- [x] Experiment response analysis mart technical QA (PR #6 merged)
 - [ ] Further intermediate models and trusted analytical marts
 - [ ] Customer behavior analysis and pre-treatment features
-- [ ] Campaign effectiveness and segment-level heterogeneity analysis
+- [x] Descriptive segment-level response heterogeneity (Gates A–D; PR #7 pending merge)
+- [ ] Verified prospective campaign effectiveness / causal experiment
 - [ ] Post-MVP: individual uplift modeling
 
 ---
