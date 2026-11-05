@@ -156,5 +156,101 @@ p < 1e-10. All three inferential boolean checks passed.
 These statistics depend on independent-binomial and large-sample
 assumptions; small p-values and confidence intervals do NOT establish
 causal SMS incrementality. Resource bytes/charges remain unreported,
-and owner review and merge of Draft PR #6 remain pending. Monetary, causal and targeting-deployment
+and PR #6 was subsequently squash-merged to main on 2026-11-02
+(Chile time) as commit `6210d9c`. Monetary, causal and targeting-deployment
 claims remain out of scope.
+
+## DEC-015 — Outcome-blind descriptive segmentation and conditional heterogeneity (Session 06)
+
+Owner approved *two separate descriptive dimensions* before analyzing
+segment outcomes: `transactions_90d` (frequency) and
+`recency_days_at_history_end` (recency). Exact pooled discrete tertiles
+on the 200,039 labeled train clients produced frozen frequency cutoffs
+8/18 and recency 2/7. Boundaries are never retuned using target.
+Six segments cover the full labeled train set independently by dimension.
+
+Gate A (distribution), Gate B (response / source reconciliation),
+Gate C (six within-segment comparisons and four prespecified RD
+heterogeneity contrasts with 95% intervals and BH-FDR), and Gate D
+(outcome-blind companion-feature SMD / 9-cell overlap diagnostic)
+were executed by the project owner in BigQuery US on 2026-11-05.
+Reported Gate B supports: 6/6 `PASS_SUPPORT`, 2/2
+`PASS_RECONCILED`; Gate C arithmetic matches independent reference.
+Observed frequency Low/Medium/High RDs: +4.5792 / +3.2506 / +1.4848
+pp; recency Recent/Intermediate/Less recent: +2.5544 / +3.5101 /
++4.0534 pp. Three of four BH-adjusted *descriptive* differences
+in RDs meet q<0.05; the intermediate-vs-recent comparison does not.
+Gate D: maximum absolute companion SMD 0.010189; the nine
+frequency×recency cells reconcile all 200,039 clients, with
+max absolute arm composition delta 0.1917 pp. The two segment
+dimensions overlap substantially and are not additive opportunities.
+
+Interpretation: customer historical activity is associated with binary
+target rates and observed treatment/control contrasts. This cannot
+identify causal SMS effectiveness or individual uplift: source
+randomization, exposure, intervention timing, target outcome window
+and certified pre-SMS feature eligibility are still NOT VERIFIED.
+The high-frequency arm's high baseline response also means absolute
+risk differences may be constrained by ceiling effects. Small SMD
+values do not prove exchangeability. The exploratory FDR results are
+not confirmatory due to assumptions and reuse of customers across
+dimensions. Recommendation is to formulate and prospectively test
+hypotheses in an auditable randomized CRM experiment; **no rollout**.
+
+No new dbt model, warehouse CI, incremental revenue or ROI computation.
+Queries and owner-reported results are versioned in
+`docs/SEGMENT_HETEROGENEITY_CONTRACTS.md` and
+`docs/SESSION_06_ANALYTICAL_FINDINGS.md`; PR #7 remains Draft
+until explicit owner review/approval.
+
+## DEC-016 — Joint descriptive response and BI reporting scopes (Session 06 Part 2)
+
+Continue the approved noncausal exploratory analysis without altering
+frequency (<=8 / 9–18 / >=19) or recency (<=2 / 3–7 / >=8) cutoffs.
+Gate E: a **post-hoc nine-cell** frequency×recency response table,
+all cells PASS_SUPPORT, with exact reconciliation against both
+original arm-positive counts and the six frozen Gate B marginal rows.
+No additional joint-cell significance tests, selection of winners
+or claims of causal heterogeneity.
+
+Gate F: common-weight pooled joint-cell standardization for
+seven scopes (overall+3 frequency+3 recency) uses one identical
+within-scope distribution for both source-defined arms. Owner-run
+BigQuery QA `PASS_RECONCILED`; raw global observed RD +3.3231 pp
+vs standardized +3.2112 pp, change −0.1119 pp. This limited
+compositional sensitivity, plus absolute-vs-relative and high baseline
+headroom diagnostics, **does not** certify pre-treatment validity,
+identify SMS causal effects, remove unobserved confounding, or justify
+targeting rollout. Original and standardized metrics must be labeled
+as observational.
+
+Gate G **reporting model choice**: use a dbt-managed BigQuery `view`
+rather than another customer-level table, aggregating the existing
+`mart_experiment_analysis`. The view has **16 rows** with explicit
+alternative `analysis_scope`: 1 overall, 3 frequency, 3 recency,
+9 joint. Each scope holds *all 200,039 clients* in mutually exclusive
+segments *within that scope*, and **counts must never be summed across
+scopes**. Raw numerator/denominator counts remain inspectable.
+Rates and RD/RR are derived, not summable; recompute them from count
+totals when aggregating. Common-weight standardized values and
+non-FDR-adjusted CI limits are available only for nonjoint rows.
+Joint-cell inference/CI values must be null, with explicit semantic
+flags prohibiting causal interpretation.
+
+Owner-reported independent BigQuery QA (2026-11-05),
+`sql/qa/14_reporting_segments_reconciliation.sql`, gave
+**4/4 `PASS_RECONCILED` scopes**, 16/16 distinct keys and
+0 missing/mismatched/unexpected keys, count/rate errors, incorrect
+joint CI/standardized measures, missing nonjoint measures, semantic
+or support errors. It reconciles 200,039 unique source clients,
+100,058 control and 99,981 treatment with original outcomes.
+**Subsequent owner-run dbt evidence (2026-11-05):** reporting view
+`dbt run` **1/1 PASS** (13.95s) and selected `dbt test`
+**28/28 PASS** (29.70s), both with 0 WARN/ERROR. Together with
+independent BigQuery QA, **Gate G technical PASS**. Actual warehouse
+costs/bytes and automated CI are not reported.
+
+Future Power BI must filter to one scope at a time and treat
+derived rates/intervals as nonadditive. Power BI/dashboard postponed
+to Session 07 by the owner. PR #7 stays Draft, no merge until explicit
+review and authorization. The Project Master remains private.

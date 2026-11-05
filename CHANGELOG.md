@@ -1,5 +1,83 @@
 # Changelog
 
+## 2026-11-05 — Session 06 (descriptive segment heterogeneity / Draft PR #7)
+
+### Added
+- `docs/SEGMENT_HETEROGENEITY_CONTRACTS.md`: approved definitions, owner-run Gate A–D evidence, statistics, cautions.
+- Four versioned BigQuery analysis scripts `04_segment_distribution_precheck.sql`,
+  `05_segment_observed_response.sql`, `06_segment_response_inference.sql`,
+  `07_segment_composition_diagnostics.sql`.
+- `docs/SESSION_06_ANALYTICAL_FINDINGS.md`: CRM-oriented decision memo with
+  observation/assumption/hypothesis/action separation.
+
+### Owner-executed BigQuery evidence — Part 1 Gates A–D
+- Gate A: exact outcome-blind tertiles frozen from 200,039 train clients.
+  Frequency cutoffs 8/18; recency 2/7; zero missing and negative;
+  complete six-bin coverage.
+- Gate B: six segments with `PASS_SUPPORT`; two dimensions
+  `PASS_RECONCILED` to 100,058 control / 99,981 treatment clients
+  and source positives 60,363 / 63,639.
+- Gate C: six observed RD/RR and 95% CIs, six within-segment proportion
+  tests and four difference-in-RDs contrasts; independent arithmetic
+  matches reported SQL precision. BH-FDR at 0.05: 6/6 within-segment,
+  3/4 predeclared heterogeneity contrasts significant **descriptively**
+  under large-sample independent-binomial assumptions.
+- Gate D: companion-feature SMDs all <0.1 in absolute value (max
+  0.010189); nine frequency×recency cells reconcile 200,039 clients
+  / 100,058 controls / 99,981 treatment, maximum arm-mix delta 0.1917 pp.
+- At Part 1, no new dbt models existed; no Session 06 GitHub Actions CI/dbt build claims;
+  warehouse execution was by the owner, with independent arithmetic
+  checks of supplied results. Actual processing bytes/costs not supplied.
+
+### Boundaries and remaining gates
+- Segment features end at the **observed** 2019-03-18 history cutoff,
+  **not verified SMS T0**. Assignment, SMS delivery and target outcome
+  observation window remain unverified.
+- Descriptive differences and low SMD **do not prove causal uplift,
+  absence of confounding or targeting eligibility**; no ROI/individual
+  uplift/deployment claim. PR #7 is Draft and unmerged pending owner review.
+- Session 05 PR #6 **was merged** to main as `6210d9c` on
+  2026-11-02 (Chile time); older Draft descriptions below are historical.
+
+### Session 06 Part 2 — owner-executed BigQuery evidence (2026-11-05)
+
+- **Gate E:** `sql/analysis/08_joint_segment_observed_response.sql` produced
+  9/9 `PASS_SUPPORT` joint frequency×recency cells and
+  `PASS_RECONCILED`; 0 count, outcome or marginal mismatches
+  against 200,039 train customers and source outcomes. No new
+  post-hoc significance tests were made.
+- **Gate F:** `sql/analysis/09_joint_composition_standardization.sql`
+  produced 3 scopes / 7 summary rows, `PASS_RECONCILED`,
+  zero bad weights, group counts or raw marginals. Original global
+  observed RD +3.3231 pp; pooled-cell-standardized RD +3.2112 pp
+  (−0.1119 pp). All seven raw/standardized comparisons reconcile
+  to independent arithmetic; mathematical ceiling documented.
+- **Gate G reporting:** authored BigQuery dbt view
+  `rpt_experiment_response_segments`, YAML contract,
+  singular dbt reconciliation test, independent
+  `sql/qa/14_reporting_segments_reconciliation.sql` and
+  `docs/REPORTING_LAYER_CONTRACT.md`. The reporting
+  population is non-additive across four alternative scopes
+  (1 overall + 3 frequency + 3 recency + 9 joint = 16 rows).
+  Owner-reported independent BigQuery QA:
+  **4/4 `PASS_RECONCILED`**, **16 actual/unique keys**, 0 missing,
+  unexpected, mismatched, incorrect metric, improper joint inference,
+  invalid support or semantic rows; all scopes independently
+  reconcile 200,039 clients, 100,058/99,981 source arms and
+  60,363/63,639 positive outcomes.
+- **Evidence boundary:** The independent QA successfully queried the
+  reporting object, but the owner has **not supplied `dbt run`
+  or `dbt test` CLI results** at the time of that preliminary QA.
+  **Later owner-run dbt evidence (same date):** reporting view model
+  **1/1 PASS** in 13.95s and **28/28 data tests PASS** in 29.70s,
+  both with zero WARN/ERROR. Together with BigQuery 4/4 scope QA,
+  **Gate G is technically PASS**. No automated CI, monetary charges
+  or bytes-scanned metrics are inferred.
+- **Scope boundary:** Gate G reporting layer built and validated; Power BI
+  modelling/DAX/dashboard postponed to Session 07. No causal SMS
+  incrementality, individualized uplift,
+  targeting rollout, revenue or ROI claims. PR #7 remains Draft.
+
 ## 2026-11-02 — Session 05 (experiment response mart / Draft PR #6)
 
 ### Added and technically validated
