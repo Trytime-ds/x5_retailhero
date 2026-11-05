@@ -1,0 +1,125 @@
+version: 2
+
+models:
+  - name: rpt_experiment_response_segments
+    description: >
+      Session 06 reporting VIEW: 16 non-additive analytical rows across
+      four alternative scopes (overall=1, frequency=3, recency=3, joint=9).
+      Each scope independently represents the same 200,039 labeled train
+      customers and must NOT be summed across scopes. Source-defined
+      response contrasts are descriptive and NOT established causal SMS
+      effects. Observed history end is not verified SMS T0.
+      The source has no independently verified assignment, delivery,
+      or target observation window. No individual uplift, revenue or ROI.
+    columns:
+      - name: analysis_key
+        description: Unique deterministic scope and segment key.
+        data_tests: [not_null, unique]
+      - name: analysis_scope
+        description: >
+          Alternative cut of the SAME training population, never additive
+          across scopes. Filter to one scope before summing counts.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['overall', 'frequency', 'recency', 'joint']
+      - name: analysis_segment
+        description: Segment display label; NOT a distinct customer entity.
+        data_tests: [not_null]
+      - name: frequency_segment
+        description: Frozen Low/Medium/High historical 90d tickets, null in irrelevant scopes.
+      - name: recency_segment
+        description: Frozen Recent/Intermediate/Less recent historical recency, null in irrelevant scopes.
+      - name: scope_order
+        description: Stable ordering of analytical scopes.
+        data_tests: [not_null]
+      - name: segment_order
+        description: Stable order within the selected scope.
+        data_tests: [not_null]
+      - name: history_end_date
+        description: Observed history end date (2019-03-18 current); NOT campaign T0.
+        data_tests: [not_null]
+      - name: clients
+        description: Customers within the selected scope segment; not additive across scopes.
+        data_tests: [not_null]
+      - name: control_n
+        description: Source-defined control customer count within this row.
+        data_tests: [not_null]
+      - name: control_positive
+        description: Number of source-defined positive binary outcomes in control.
+        data_tests: [not_null]
+      - name: control_negative
+        description: Number of source-defined negative binary outcomes in control.
+        data_tests: [not_null]
+      - name: treatment_n
+        description: Source-defined treatment customer count within this row.
+        data_tests: [not_null]
+      - name: treatment_positive
+        description: Number of source-defined positive binary outcomes in treatment.
+        data_tests: [not_null]
+      - name: treatment_negative
+        description: Number of source-defined negative binary outcomes in treatment.
+        data_tests: [not_null]
+      - name: control_response_pct
+        description: Source-defined observed control positivity rate times 100 (0-100 scale).
+        data_tests: [not_null]
+      - name: treatment_response_pct
+        description: Source-defined observed treatment positivity rate times 100 (0-100 scale).
+        data_tests: [not_null]
+      - name: observed_rd_pp
+        description: Treatment minus control observed positivity in percentage points; NOT causal uplift.
+        data_tests: [not_null]
+      - name: observed_rr
+        description: Ratio of treatment to control observed positive outcome rates; NOT causal uplift.
+        data_tests: [not_null]
+      - name: rd_ci95_lower_pp
+        description: Individual unadjusted Wald 95% bound; null in post hoc joint scope.
+      - name: rd_ci95_upper_pp
+        description: Individual unadjusted Wald 95% bound; null in post hoc joint scope.
+      - name: rr_ci95_lower
+        description: Individual unadjusted log-Katz 95% bound; null in joint scope.
+      - name: rr_ci95_upper
+        description: Individual unadjusted log-Katz 95% bound; null in joint scope.
+      - name: pooled_std_control_response_pct
+        description: Pooled-joint-cell-weight descriptive rate (0-100), nonjoint scopes only.
+      - name: pooled_std_treatment_response_pct
+        description: Pooled-joint-cell-weight descriptive rate (0-100), nonjoint scopes only.
+      - name: pooled_std_rd_pp
+        description: Descriptive pooled-cell-standardized RD, not causal effect; null in joint.
+      - name: pooled_std_rr
+        description: Descriptive pooled-cell-standardized RR; null in joint.
+      - name: std_minus_raw_rd_pp
+        description: Pooled standardization minus raw observed RD (percentage points).
+      - name: support_status
+        description: Current counts must pass support and integrity QA to use rate inference.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['PASS_SUPPORT']
+      - name: inference_scope
+        description: Joint is post hoc descriptive; other scopes have unadjusted CI only.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'POST_HOC_DESCRIPTIVE_ONLY'
+                  - 'MARGINAL_DESCRIPTIVE_WITH_UNADJUSTED_CI'
+      - name: ci_method
+        description: Unadjusted individual 95% CI methodology; must be null for joint.
+      - name: metric_semantics
+        description: Explicit noncausal semantic contract.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['OBSERVED_SOURCE_DEFINED_RESPONSE_NOT_CAUSAL']
+      - name: causal_eligibility
+        description: T0, assignment, delivery and outcome window not independently verified.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['T0_ASSIGNMENT_DELIVERY_OUTCOME_WINDOW_NOT_VERIFIED']
