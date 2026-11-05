@@ -1,6 +1,6 @@
 # Session 06 — Part 2 analytical and reporting contract
 
-**Status:** Gate E owner-executed PASS on 2026-11-05; Gate F SQL published NOT RUN; Gate G reporting NOT STARTED. Approved session scope by owner:
+**Status:** Gates E and F owner-executed PASS on 2026-11-05; Gate G dbt reporting view/schema/QA authored but NOT BUILT/TESTED. Approved session scope by owner:
 joint frequency×recency analysis → robustness/sensitivity → reporting layer →
 documentation and review; **Power BI dashboard deferred to Session 07**.
 Existing Gates A–D passed on owner-executed BigQuery 2026-11-05; PR #7 stays Draft.
@@ -106,6 +106,49 @@ After Gate E evidence is reviewed:
 - **No new significance testing of joint cells** and no unplanned
   recutting of frequency/recency thresholds.
 
+### Gate F execution evidence — owner-reported 2026-11-05
+
+Owner executed `sql/analysis/09_joint_composition_standardization.sql`
+in BigQuery US and provided **all three result sets**. The user-reported
+`gate_f_status=PASS_RECONCILED`; `scopes=3`, `summary_rows=7`,
+and **zero** bad scope group counts, bad scope reconciliations, bad
+pooled weights or raw marginal mismatches. Assistant independently
+recomputed raw and pooled-weight RDs from Gate E integer counts
+and reproduced every change to displayed precision. No assistant
+warehouse execution or GitHub Actions run occurred.
+
+| Scope | Segment | Raw observed RD pp | Pooled-cell-standardized RD pp | Change pp |
+|---|---|---:|---:|---:|
+| Overall | All clients | 3.3231 | 3.2112 | -0.1119 |
+| Frequency | Low | 4.5792 | 4.5723 | -0.0068 |
+| Frequency | Medium | 3.2506 | 3.2905 | +0.0398 |
+| Frequency | High | 1.4848 | 1.5824 | +0.0977 |
+| Recency | Recent | 2.5544 | 2.4352 | -0.1192 |
+| Recency | Intermediate | 3.5101 | 3.4709 | -0.0393 |
+| Recency | Less recent | 4.0534 | 3.8851 | -0.1683 |
+
+All standardized differences retain the sign and general order of
+their raw observed counterparts. The global difference shifts
+-0.1119 pp; this is a **small observed composition sensitivity**
+under this specific common-weight standardization, not evidence
+that unmeasured confounding or selection is small.
+
+**Ceiling/scale diagnostic (9 joint cells, owner-reported):**
+- High frequency + Recent: control response **90.0305%**,
+  observed RD **+1.2808 pp**, RR **1.014227**; mathematical upward
+  headroom from control is only **9.9695 pp**.
+- Low frequency + Less recent: control response **30.2723%**,
+  RD **+4.4558 pp**, RR **1.147189**; headroom **69.7277 pp**.
+- Distinct raw RD and RR patterns can be influenced by the
+  bounded binary response scale and baseline risk; headroom is
+  a mathematical ceiling, **not** expected SMS incrementality.
+- No joint-cell inferential tests were conducted and none are
+  implied by this sensitivity analysis.
+
+**Gate F: PASS for verified arithmetic reconciliation and sensitivity
+diagnostics.** Does not establish randomized assignment, target
+causality, pre-SMS timing, or generalizability.
+
 ## Gate G — data product for reporting (no dashboard work)
 
 Deliver a reproducible and inspectable aggregate data contract with at
@@ -125,10 +168,7 @@ same 200,039 clients**, never additive. Supply `sort_order`, explicit
 that imply verified uplift or economic contribution. Do not embed
 historical experimental results as static hardcoded reporting data.
 
-Choose an appropriate BigQuery `VIEW` or dbt `reporting` layer after
-Gate E/F review and explain the cost/performance tradeoff. A new dbt
-materialization requires contract/test/evidence and an explicit review;
-no blind deployment to BigQuery.
+**Design implemented (NOT BUILT YET):** `dbt/models/reporting/rpt_experiment_response_segments.sql` uses a BigQuery **view**, with schema contract `dbt/models/reporting/_reporting.yml`, singular source-count and scope reconciliation test `dbt/tests/assert_reporting_response_scope_reconciliation.sql`, and independent BigQuery QA `sql/qa/14_reporting_segments_reconciliation.sql`. See `docs/REPORTING_LAYER_CONTRACT.md` for grain, measures and null inferential fields in joint scope. A view does not duplicate stored customer tables but recomputes aggregations on query; actual resource usage is not yet measured. **Nothing has been deployed or tested in BigQuery as part of Gate G.**
 
 **Reporting QA:** expected 16 total rows (1 overall+3+3+9);
 reconcile *each scope separately* to 200,039 clients / 100,058
