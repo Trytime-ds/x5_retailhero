@@ -1,6 +1,6 @@
 # Session 06 — Descriptive Response Heterogeneity Contract
 
-**Status:** DRAFT — pending owner review. No Session 06 segment outcome queries or tests have been executed.
+**Status:** Segmentation design APPROVED by owner on 2026-11-05; empirical cutoffs NOT YET FROZEN. No Session 06 distribution or outcome queries have been executed.
 **Scope:** Outcome-blind segment design first; descriptive treatment/control response comparisons second.
 **Base:** `mart_experiment_analysis` in BigQuery `x5_dbt_dev`; one row per 200,039 distinct `stg_uplift_train` clients.
 **History anchor:** 2019-03-18, observed purchase-history end. **NOT** independently verified SMS T0.
@@ -23,7 +23,7 @@ This is exploratory descriptive heterogeneity, **not** verified conditional aver
 
 ## 3. Segment construction — freeze before looking at outcomes
 
-For **each dimension separately**, derive exact empirical 33rd and 67th percentile cutoffs (`PERCENTILE_DISC` at 1/3 and 2/3, if supported in the deployed BigQuery dialect) **from all 200,039 train clients pooled**, never stratified by treatment or target. Ignore missing observations for computing recency cutoffs, but retain them as a separate Missing segment.
+For **each dimension separately**, derive exact empirical 33rd and 67th percentile cutoffs (`PERCENTILE_DISC` at 1/3 and 2/3, using BigQuery Standard SQL) **from all 200,039 train clients pooled**, never stratified by treatment or target. Ignore missing observations for computing recency cutoffs, but retain them as a separate Missing segment.
 
 - Frequency: **Low** `x <= q33`; **Medium** `q33 < x <= q67`; **High** `x > q67`.
 - Recency: **Recent** `x <= q33`; **Intermediate** `q33 < x <= q67`; **Less recent** `x > q67`. Missing stays separate.
@@ -68,11 +68,11 @@ Before narrating results, check:
 
 ## 7. Deliverables and workflow
 
-1. Owner review of this **draft contract**, then freeze eligibility and segmentation decisions.
-2. Distribution-only profiling SQL and owner-executed evidence (Gate A).
+1. **Owner-approved 2026-11-05:** descriptive frequency and recency dimensions, outcome-blind discrete tertiles, support gates and multiplicity plan. Empirical cutoff values remain pending Gate A execution and explicit freeze.
+2. Execute `sql/analysis/04_segment_distribution_precheck.sql` (BigQuery region US, whole script). Inspect its two result sets: distribution/cutoff/gate and membership counts. Record owner-executed evidence, stop conditions and freeze empirical boundaries before outcome SQL (Gate A).
 3. Segment-rate descriptive SQL, inferential/interaction SQL, multiplicity checks, independent reconciliation QA, documented limitations.
 4. Update README/CHANGELOG/DECISIONS. Note: current README still calls PR #6 Draft even though GitHub confirms it merged; correct this in a separate commit in the same Session 06 feature PR.
 5. Evidence of tests/queries **only after the owner has actually run them**; report bytes/costs if measured, never infer actual charges.
 6. Review the feature diff; obtain explicit owner approval before squash merge into `main`. Keep the Project Master private. CI/CD is out of scope for this PR.
 
-**Current gate status:** Contract DRAFT; temporal eligibility NOT VERIFIED; distribution and response segment QA NOT RUN; causal identification NOT VERIFIED.
+**Current gate status:** Contract APPROVED / empirical cutoffs PENDING; temporal eligibility NOT VERIFIED; distribution and response segment QA NOT RUN; causal identification NOT VERIFIED. The GitHub script's presence does not prove execution.
