@@ -137,13 +137,24 @@ Before narrating results, check:
 - Robustness: compare conclusions with one prespecified, separately labeled sensitivity grouping **only if** the primary segmentation has passed its gate, and avoid a search for p < 0.05.
 - Executive readout separates **observation**, **assumption**, **hypothesis**, and **next evidence needed**. No ready-to-deploy targeting policy, revenue estimates, causal uplift or ROI.
 
+### Gate D — planned (NOT EXECUTED): composition and overlap diagnostics
+
+Following Gate C PASS, run `sql/analysis/07_segment_composition_diagnostics.sql` in BigQuery US as a **descriptive robustness check** without reading `target` or changing the frozen boundaries.
+
+- **Output 1:** within each frequency segment, compare recency by source-defined arm; within each recency segment, compare 90-day ticket frequency by arm. Report means, medians, standardized mean differences (SMD) and diagnostic flags. Flag |SMD| ≥ 0.1 for review, not as a formal experiment-balance pass/fail criterion.
+- **Output 2:** nine cells crossing the frozen frequency × recency segments (or fewer if a cell is empty), with counts for both arms and their share of the full respective arm. This reveals overlap/dependence of the two dimensions and differences in observed mix.
+- **Guardrails:** verify exact source 200,039 unique clients, 100,058 controls, 99,981 treatments, six frozen memberships. The script has no outcome variable; it does not attempt to estimate adjusted causal effects or infer randomization from covariate balance.
+- **Interpretation:** a large overlap or composition difference may help explain observed gradients. No predefined additional outcome segmentation is authorized; a post-hoc sensitivity analysis would need separate labeling and justification.
+
+**Gate D status: NOT RUN.** Await owner-executed BigQuery output; no robustness conclusion is currently justified.
+
 ## 7. Deliverables and workflow
 
 1. **Owner-approved and frozen 2026-11-05:** descriptive frequency and recency dimensions, pooled exact-discrete-tertile rules and numeric thresholds; no target used to select thresholds.
 2. **Completed Gate A:** owner executed `sql/analysis/04_segment_distribution_precheck.sql`, supplied two result sets, both dimensions PASS; cutoff values and membership counts documented above.
 3. **Completed Gate B/C:** owner executed `sql/analysis/05_segment_observed_response.sql` (six `PASS_SUPPORT`, both dimensions `PASS_RECONCILED`) and `sql/analysis/06_segment_response_inference.sql` (CIs, z, p approx. and BH q independently reconciled). **Next:** robustness / descriptive composition diagnostics and stakeholder interpretation.
-4. Update README/CHANGELOG/DECISIONS. Note: current README still calls PR #6 Draft even though GitHub confirms it merged; correct this in a separate commit in the same Session 06 feature PR.
+4. **Next:** execute outcome-blind `sql/analysis/07_segment_composition_diagnostics.sql` and review SMD/overlap before stakeholder readout. Update README/CHANGELOG/DECISIONS (README still calls merged PR #6 Draft).
 5. Evidence of tests/queries **only after the owner has actually run them**; report bytes/costs if measured, never infer actual charges.
 6. Review the feature diff; obtain explicit owner approval before squash merge into `main`. Keep the Project Master private. CI/CD is out of scope for this PR.
 
-**Current gate status:** Contract APPROVED, cutoffs FROZEN, Gate A PASS, Gate B PASS, Gate C PASS conditional (all owner-executed); robustness/challenge and business communication PENDING; temporal eligibility and causal identification NOT VERIFIED. Versioned SQL alone does not prove execution.
+**Current gate status:** Contract APPROVED, cutoffs FROZEN, Gate A PASS, Gate B PASS, Gate C PASS conditional (all owner-executed); Gate D composition diagnostics NOT RUN; business communication PENDING; temporal eligibility and causal identification NOT VERIFIED. Versioned SQL alone does not prove execution.
