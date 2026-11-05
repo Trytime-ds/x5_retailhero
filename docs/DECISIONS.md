@@ -202,3 +202,52 @@ Queries and owner-reported results are versioned in
 `docs/SEGMENT_HETEROGENEITY_CONTRACTS.md` and
 `docs/SESSION_06_ANALYTICAL_FINDINGS.md`; PR #7 remains Draft
 until explicit owner review/approval.
+
+## DEC-016 — Joint descriptive response and BI reporting scopes (Session 06 Part 2)
+
+Continue the approved noncausal exploratory analysis without altering
+frequency (<=8 / 9–18 / >=19) or recency (<=2 / 3–7 / >=8) cutoffs.
+Gate E: a **post-hoc nine-cell** frequency×recency response table,
+all cells PASS_SUPPORT, with exact reconciliation against both
+original arm-positive counts and the six frozen Gate B marginal rows.
+No additional joint-cell significance tests, selection of winners
+or claims of causal heterogeneity.
+
+Gate F: common-weight pooled joint-cell standardization for
+seven scopes (overall+3 frequency+3 recency) uses one identical
+within-scope distribution for both source-defined arms. Owner-run
+BigQuery QA `PASS_RECONCILED`; raw global observed RD +3.3231 pp
+vs standardized +3.2112 pp, change −0.1119 pp. This limited
+compositional sensitivity, plus absolute-vs-relative and high baseline
+headroom diagnostics, **does not** certify pre-treatment validity,
+identify SMS causal effects, remove unobserved confounding, or justify
+targeting rollout. Original and standardized metrics must be labeled
+as observational.
+
+Gate G **reporting model choice**: use a dbt-managed BigQuery `view`
+rather than another customer-level table, aggregating the existing
+`mart_experiment_analysis`. The view has **16 rows** with explicit
+alternative `analysis_scope`: 1 overall, 3 frequency, 3 recency,
+9 joint. Each scope holds *all 200,039 clients* in mutually exclusive
+segments *within that scope*, and **counts must never be summed across
+scopes**. Raw numerator/denominator counts remain inspectable.
+Rates and RD/RR are derived, not summable; recompute them from count
+totals when aggregating. Common-weight standardized values and
+non-FDR-adjusted CI limits are available only for nonjoint rows.
+Joint-cell inference/CI values must be null, with explicit semantic
+flags prohibiting causal interpretation.
+
+Owner-reported independent BigQuery QA (2026-11-05),
+`sql/qa/14_reporting_segments_reconciliation.sql`, gave
+**4/4 `PASS_RECONCILED` scopes**, 16/16 distinct keys and
+0 missing/mismatched/unexpected keys, count/rate errors, incorrect
+joint CI/standardized measures, missing nonjoint measures, semantic
+or support errors. It reconciles 200,039 unique source clients,
+100,058 control and 99,981 treatment with original outcomes.
+**dbt build/test CLI logs not yet supplied**; independent BigQuery
+QA PASS must not be mislabeled as completed dbt model/test validation.
+
+Future Power BI must filter to one scope at a time and treat
+derived rates/intervals as nonadditive. Power BI/dashboard postponed
+to Session 07 by the owner. PR #7 stays Draft, no merge until explicit
+review and authorization. The Project Master remains private.
