@@ -168,7 +168,7 @@ same 200,039 clients**, never additive. Supply `sort_order`, explicit
 that imply verified uplift or economic contribution. Do not embed
 historical experimental results as static hardcoded reporting data.
 
-**Design implemented (NOT BUILT YET):** `dbt/models/reporting/rpt_experiment_response_segments.sql` uses a BigQuery **view**, with schema contract `dbt/models/reporting/_reporting.yml`, singular source-count and scope reconciliation test `dbt/tests/assert_reporting_response_scope_reconciliation.sql`, and independent BigQuery QA `sql/qa/14_reporting_segments_reconciliation.sql`. See `docs/REPORTING_LAYER_CONTRACT.md` for grain, measures and null inferential fields in joint scope. A view does not duplicate stored customer tables but recomputes aggregations on query; actual resource usage is not yet measured. **BigQuery independent QA now PASS based on owner-reported output; CLI dbt run/test evidence still pending.**
+**Design built and validated 2026-11-05:** `dbt/models/reporting/rpt_experiment_response_segments.sql` is a BigQuery **view**, with schema contract `dbt/models/reporting/_reporting.yml`, singular source-count and scope reconciliation test `dbt/tests/assert_reporting_response_scope_reconciliation.sql`, and independent BigQuery QA `sql/qa/14_reporting_segments_reconciliation.sql`. See `docs/REPORTING_LAYER_CONTRACT.md` for grain, measures and null inferential fields in joint scope. A view avoids storing a duplicate customer table but recomputes aggregations when queried; resource usage is unreported. **Owner-reported dbt run 1/1 PASS, dbt test 28/28 PASS and independent BigQuery QA 4/4 PASS.**
 
 **Reporting QA:** expected 16 total rows (1 overall+3+3+9);
 reconcile *each scope separately* to 200,039 clients / 100,058
