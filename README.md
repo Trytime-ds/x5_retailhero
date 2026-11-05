@@ -108,7 +108,7 @@ The project combines SQL-based analysis, analytics engineering, customer segment
   and [full segment contract and QA](docs/SEGMENT_HETEROGENEITY_CONTRACTS.md).
   PR #7 remains **Draft / awaiting owner review and explicit merge approval**.
 
-**Phase 8 — Aggregated BI reporting interface: Independent BigQuery QA PASS; dbt CLI evidence pending (Draft PR #7)**
+**Phase 8 — Aggregated BI reporting interface: Technical and QA PASS (Draft PR #7)**
 
 - Authored `rpt_experiment_response_segments` as a **BigQuery view** with
   16 aggregated rows and four non-additive analytical scopes:
@@ -118,13 +118,15 @@ The project combines SQL-based analysis, analytics engineering, customer segment
 - Owner-executed independent BigQuery reporting QA: **4/4 scopes
   `PASS_RECONCILED`** and **16/16 unique keys**; zero bad counts,
   metrics, confidence-interval placement or semantic/support flags.
-- The `dbt run` and `dbt test` CLI logs have not yet been shared, so
-  the full model execution/test gate remains pending evidence.
+- Owner-run `dbt run` **1/1 PASS** (view model, **13.95s**) and
+  `dbt test` **28/28 PASS** (**29.70s**), with zero WARN/ERROR.
+  Combined with independent BigQuery QA, **Gate G PASS**.
+  Resource bytes/costs and CI automation are not verified.
 - See [reporting contract and QA evidence](docs/REPORTING_LAYER_CONTRACT.md)
   and [Part 2 analytical contract](docs/SESSION_06_PART2_CONTRACT.md).
   Power BI modelling and dashboards are deferred to Session 07.
 
-**Current focus: dbt CLI validation evidence, documentation and review of Draft PR #7**, without claiming causal SMS uplift or monetary impact.
+**Current focus: review and integration of completed Session 06 work via Draft PR #7**, without claiming causal SMS uplift or monetary impact.
 
 Observed treatment/control covariate balance does **not** establish randomization. The intervention time, assignment mechanism and outcome observation window have not been verified. The observed +3.3231 percentage point source-defined binary response difference must **not** be interpreted as proven SMS incrementality.
 
@@ -143,7 +145,7 @@ See [technical decisions](docs/DECISIONS.md), [staging contracts and QA evidence
 - [ ] Further intermediate models and trusted analytical marts
 - [ ] Customer behavior analysis and pre-treatment features
 - [x] Descriptive segment-level response heterogeneity (Gates A–F; PR #7 pending merge)
-- [ ] Reporting view technical gate (BigQuery QA PASS; dbt run/test logs pending)
+- [x] Reporting view technical gate (dbt 1/1 model, 28/28 tests, 4/4 BigQuery scopes PASS; PR #7 pending merge)
 - [ ] Power BI dashboard (Session 07)
 - [ ] Verified prospective campaign effectiveness / causal experiment
 - [ ] Post-MVP: individual uplift modeling
