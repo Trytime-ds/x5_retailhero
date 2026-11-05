@@ -244,8 +244,11 @@ Owner-reported independent BigQuery QA (2026-11-05),
 joint CI/standardized measures, missing nonjoint measures, semantic
 or support errors. It reconciles 200,039 unique source clients,
 100,058 control and 99,981 treatment with original outcomes.
-**dbt build/test CLI logs not yet supplied**; independent BigQuery
-QA PASS must not be mislabeled as completed dbt model/test validation.
+**Subsequent owner-run dbt evidence (2026-11-05):** reporting view
+`dbt run` **1/1 PASS** (13.95s) and selected `dbt test`
+**28/28 PASS** (29.70s), both with 0 WARN/ERROR. Together with
+independent BigQuery QA, **Gate G technical PASS**. Actual warehouse
+costs/bytes and automated CI are not reported.
 
 Future Power BI must filter to one scope at a time and treat
 derived rates/intervals as nonadditive. Power BI/dashboard postponed
