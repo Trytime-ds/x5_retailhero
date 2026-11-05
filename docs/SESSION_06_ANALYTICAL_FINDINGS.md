@@ -1,6 +1,6 @@
 # Session 06 — Observed response heterogeneity: analytical findings
 
-**Status:** Descriptive analysis Gates A–D completed by project owner on 2026-11-05. PR #7 is Draft and not merged. **This is a noncausal case study; not a validated campaign optimization policy.**
+**Status:** Descriptive analysis Gates A–F completed by project owner on 2026-11-05. Gate G reporting view authored; construction/QA not yet run. PR #7 is Draft and not merged. **This is a noncausal case study; not a validated campaign optimization policy.**
 
 ## Executive summary
 
@@ -61,6 +61,52 @@ No individual-customer uplift is estimated. The difference between RDs is not it
 - No alternative outcome-bearing binning, sample splitting or out-of-sample replication performed; Gate D is a **composition diagnostic**, not a substantive outcome sensitivity analysis.
 - Sample is a fixed historical train subset; representativeness for a future live customer population has not been established.
 
+## Part 2: joint composition and scale sensitivity (exploratory)
+
+Owner-executed **Gate E**, `sql/analysis/08_joint_segment_observed_response.sql`,
+reconciled nine frozen frequency×recency combinations to 200,039
+train customers, with all 9 cells above minimum sample/outcome support;
+0 source, count or marginal mismatches. The observed between-arm RD
+remains positive in each joint cell, spanning **+1.2808 pp** (High
+frequency × Recent) to **+4.8661 pp** (Low frequency × Intermediate).
+No new nine-cell significance tests were performed; this is **post hoc
+descriptive exploration**, not independent replication of Gate C.
+
+Owner-executed **Gate F**, `sql/analysis/09_joint_composition_standardization.sql`,
+produced 7 nonjoint raw vs pooled-joint-cell-weight contrasts and
+9 response-ceiling diagnostics; 3/3 QA scope reconciliations PASS,
+0 bad weight or marginal checks. Independent arithmetic based on
+reported joint-cell counts reproduced all seven contrasts.
+
+- Overall raw observed RD: **+3.3231 pp**; common-weight standardized
+  observed RD: **+3.2112 pp**, shift **−0.1119 pp**.
+- Across frequency Low/Medium/High, pooled standardized RDs:
+  **+4.5723 / +3.2905 / +1.5824 pp**, maintaining the raw gradient.
+- Across recency Recent/Intermediate/Less recent, pooled
+  standardized RDs **+2.4352 / +3.4709 / +3.8851 pp**, maintaining
+  the raw pattern.
+- Largest standardization-induced RD change among seven rows:
+  **−0.1683 pp** in Less recent.
+- High frequency × Recent has control response **90.0305%**, hence
+  only **9.9695 pp** mathematical maximum upward room from the
+  control baseline. This does not measure a plausible SMS effect.
+
+These findings indicate that the *observed* arm composition within
+the joint cells does not overturn the qualitative marginal patterns
+under the selected common-weight procedure. This does **not**
+establish exchangeability, feature pre-treatment eligibility, the
+causal SMS response, or a statistically adjusted confirmation
+of the post-hoc nine-cell associations.
+
+**Gate G reporting model proposed, NOT RUN:** the 16-row
+`rpt_experiment_response_segments` BigQuery dbt view is authored
+with alternative `analysis_scope` categories `overall`,
+`frequency`, `recency`, and `joint`. Each scope separately
+contains all 200,039 clients, so scopes are **non-additive**.
+Model tests and an independent QA script are versioned;
+warehouse creation and its outcomes remain pending. The
+Power BI dashboard belongs to Session 07.
+
 ## Decision memo for CRM
 
 **Observed:** historic customer activity is strongly related to binary response rates; the source-defined treatment/control response gap differs by segment, with adjusted evidence of descriptive heterogeneity in three of four comparisons.
@@ -73,9 +119,9 @@ No individual-customer uplift is estimated. The difference between RDs is not it
 
 ## Reproducibility and integration
 
-- Gates A–D: `sql/analysis/04_segment_distribution_precheck.sql`, `05_segment_observed_response.sql`, `06_segment_response_inference.sql`, `07_segment_composition_diagnostics.sql`.
+- Gates A–F: `sql/analysis/04_segment_distribution_precheck.sql` through `09_joint_composition_standardization.sql`. Gates A–F were owner-executed, not CI.
 - Numerical detail and source rows: `docs/SEGMENT_HETEROGENEITY_CONTRACTS.md`.
 - All reported BigQuery results were **executed by the project owner and shared in conversation**; code was published on the feature branch. The assistant recalculated selected checks; there is **no GitHub Actions CI/warehouse run** or full independent warehouse rerun. Processing bytes/charges have not been reported.
-- PR #7 remains Draft; final human review/explicit merge decision pending. No additional dbt model or experiment mart was created for the descriptive queries. The Project Master remains private.
+- PR #7 remains Draft; final human review/explicit merge decision pending. A new 16-row **reporting view** is authored but has not yet been created/tested in BigQuery. The existing source-level experiment mart is unchanged. The Project Master remains private.
 
 **Decision status:** analytical reporting **GO WITH LIMITATIONS**; causal identification and deployment **NOT VERIFIED / NOT APPROVED**.
