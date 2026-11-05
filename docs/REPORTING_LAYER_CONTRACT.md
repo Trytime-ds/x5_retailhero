@@ -1,6 +1,6 @@
 # Session 06 — Gate G reporting layer contract
 
-**Status:** Independent BigQuery Gate G reporting reconciliation PASS (owner-provided on 2026-11-05). BigQuery view is queryable. CLI `dbt run` and `dbt test` logs NOT YET SHARED; full technical gate remains pending evidence.
+**Status:** Gate G **PASS** (owner-reported dbt run 1/1, dbt tests 28/28 and independent BigQuery QA 4/4 scopes, all on 2026-11-05). Reporting view materialized in development BigQuery. PR #7 remains Draft / unmerged.
 **Handoff:** Power BI dashboard work is reserved for Session 07.
 **Input:** `{{ ref('mart_experiment_analysis') }}`, 200,039 labeled clients,
 observed historical behavioral context (not proven pre-SMS).
@@ -115,9 +115,18 @@ source clients and 0 invalid source rows**. The expected
 **Interpretation:** the reporting relation is queryable and the
 separate BigQuery reconciliation passes. The supplied results are
 evidence of **warehouse-side output validity**, not a transcript of the
-dbt build or its schema/singular tests. No `dbt run`/`dbt test` output
-was supplied. **Do not mark Gate G technical build/test COMPLETE until
-the CLI run and tests are supplied and reviewed.** Actual BigQuery
+dbt build or its schema/singular tests. **Owner-supplied dbt CLI evidence (2026-11-05):**
+
+- `dbt run --project-dir dbt --select rpt_experiment_response_segments`:
+  **1/1 view model PASS**, 13.95 seconds; `WARN=0, ERROR=0`.
+- `dbt test --project-dir dbt --select rpt_experiment_response_segments assert_reporting_response_scope_reconciliation`:
+  **28/28 data tests PASS**, 29.70 seconds; `WARN=0, ERROR=0`.
+- Separate BigQuery QA had already returned 4/4 `PASS_RECONCILED`
+  and overall `gate_g_status=PASS_RECONCILED` with 16/16 unique keys.
+
+**Gate G technical verification: PASS.** These are owner-reported
+terminal and warehouse results, not an assistant-run build or CI.
+Actual BigQuery
 bytes processed, elapsed time and costs not yet supplied. No GitHub
 Actions CI has been run/claimed.
 
